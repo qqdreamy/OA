@@ -1,0 +1,20 @@
+{
+    "四色印刷": {
+      "四开": { "price": 350,"addPrice": 0.08},
+      "对开": { "price": 500, "addPrice": 0.1},
+      "全开": { "price": 700,"addPrice": 0.1}
+    },
+    "单色印刷":{
+      "四开": { "price": 100,"addPrice": 0.05},
+      "对开": { "price": 200, "addPrice": 0.06},
+      "全开": { "price": 700,"addPrice": 0.1}
+    },
+    "专色印刷":{
+      "四开": { "price": 700,"addPrice": 0.16},
+      "对开": { "price": 1000, "addPrice": 0.2},
+      "全开": { "price": 1400,"addPrice": 0.2}
+    },
+    "卡合": { "price": 120,"addPrice": 0.06},
+    "覆膜": { "price": 100,"addPrice":0.6 },
+    "烫金": { "price":80,"addPrice":0.06 }
+}
