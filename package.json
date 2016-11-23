@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "element-ui": "^1.0.0-rc.6",
-    "vue": "^2.0.1"
+    "vue": "^2.0.1",
+    "wilddog": "^2.3.5"
   },
   "devDependencies": {
     "autoprefixer": "^6.4.0",

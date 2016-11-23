@@ -1,7 +1,7 @@
 <template>
 <div>
   <BookBoxMenu v-on:updateID="updateID"></BookBoxMenu>
-  <router-view name="BookBoxCount_1"></router-view>
+  <router-view></router-view>
 </div>
 </template>
 

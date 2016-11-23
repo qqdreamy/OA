@@ -27,7 +27,7 @@
     </el-form-item>
     <el-form-item label="数量">
       <el-col :span="4">
-        <el-select placeholder="请订单数量" v-model.number="quantity">
+        <el-select placeholder="请订单数量" v-model="quantity">
           <el-option v-for="item in this.quantitys" :label="item.value" :value="item.value">
           </el-option>
         </el-select>
@@ -77,7 +77,7 @@
       </el-col>
     </el-form-item>
     <el-form-item label="后道工艺">
-      <el-col :span="3" >
+      <el-col :span="2" >
         <el-checkbox class="checkbox" v-model="isfilm">覆膜</el-checkbox>
       </el-col>
       <el-col :span="2">
@@ -92,6 +92,20 @@
           </el-select>
         </el-col>
       </template>
+      <el-col :span="2">
+        <el-checkbox class="checkbox" v-model="isUV">UV油</el-checkbox>
+      </el-col>
+      <template v-if="isUV">
+        <el-col :span="3" >
+          <el-input placeholder="长" v-model.number="uvLong">
+          </el-input>
+        </el-col>
+        <el-col :span="3" >
+          <el-input placeholder="宽" v-model.number="uvWide">
+          </el-input>
+        </el-col>
+      </template>
+
     </el-form-item>
     <el-form-item>
       <el-col :span="8" :offset="6">
@@ -105,6 +119,7 @@
       覆膜：{{this.boxPrice.film}}</br>
       提绳：{{this.boxPrice.rope}}</br>
       烫金：{{this.boxPrice.permed}}</br>
+      UV：{{this.boxPrice.UV}}</br>
       加工费(含卡合):{{this.boxPrice.process}}</br>
       合计：{{this.boxPrice.count}}
   </el-dialog>
@@ -130,6 +145,9 @@ export default {
       ispermed:false,
       permed:'1',
       bagType:1,
+      isUV:false,
+      uvLong:0,
+      uvWide:0,
       dialogPriceVisible:false,
       boxPrice:{
         count:0,
@@ -138,6 +156,7 @@ export default {
         film:0,
         rope:0,
         process:0,
+        UV:0,
         permed:0
       }
     }
@@ -192,7 +211,20 @@ export default {
       //卡合
       let kahe=js_CountPrice.KaHe(this.BagLong,this.BagWide,quantity);
       //烫金
-      this.boxPrice.permed=js_CountPrice.Permed(this.permed,quantity);
+      if(this.ispermed){
+        this.boxPrice.permed=js_CountPrice.Permed(this.permed,quantity);
+      }
+      //UV
+      if(this.isUV){
+        if(this.uvLong==0 || this.uvWide==0){
+          this.$notify.error({
+            title: '填写错误',
+            message: '请填写UV尺寸！'
+          });
+          return;
+        }
+        this.boxPrice.UV=js_CountPrice.UV(this.uvLong,this.uvLong,quantity);
+      }
       //加工费
       this.boxPrice.process=(js_CountPrice.Process('手提袋',this.quantity)+kahe+Process).toFixed(2);
       //提绳

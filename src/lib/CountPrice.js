@@ -129,3 +129,10 @@ module.exports.Rope=function(type) {
   let boxJson=require("../json/other.json");
   return boxJson['提绳'][type].price;
 }
+//UV油
+module.exports.UV=function(long,wide,quantity){
+  let boxJson=require("../json/Technology.json");
+  let p=boxJson['UV'].price;
+  let Square=long/1000*wide/1000;
+  return Square*boxJson['UV'].addPrice*quantity > boxJson['UV'].price ? Square*boxJson['UV'].addPrice<boxJson['UV'].singlePrice ? boxJson['UV'].singlePrice : Square*boxJson['UV'].addPrice : boxJson['UV'].price/quantity;
+}

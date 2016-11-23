@@ -216,9 +216,10 @@
       </template>
     </el-form-item>
     <el-form-item label="后道工艺">
-      <el-col :span="3" >
-        <el-checkbox class="checkbox" v-model="bump">凹凸</el-checkbox>
+      <el-col :span="3">
+        <el-checkbox class="checkbox" v-model="isUV">UV油</el-checkbox>
       </el-col>
+
       <el-col :span="2">
         <el-checkbox class="checkbox" v-model="ispermed">烫处理</el-checkbox>
       </el-col>
@@ -264,12 +265,6 @@
 <script>
 import js_CountPrice from '../lib/CountPrice.js'
 import selectData from '../data/selectData.vue'
-var mythick={
-  '2':1150,
-  '1.5':850,
-  '2.5':1450,
-  '3':1750
-}
 export default {
   data () {
     return {
@@ -305,7 +300,7 @@ export default {
       print:'1',
       outerPrint:'4',
       technique:'1',
-      bump:0,
+      isUV:false,
       ispermed:0,
       permed:'1',
       dialogPriceVisible:false,

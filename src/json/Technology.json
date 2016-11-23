@@ -16,5 +16,6 @@
     },
     "卡合": { "price": 120,"addPrice": 0.06},
     "覆膜": { "price": 100,"addPrice":0.6 },
-    "烫金": { "price":80,"addPrice":0.06 }
+    "烫金": { "price":80,"addPrice":0.06 },
+    "UV":   {"price":200,"addPrice":3,"singlePrice":0.1}
 }
