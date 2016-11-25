@@ -14,7 +14,7 @@
     </div>
     <div class="nav-right nav-menu">
      <span class="nav-item">
-      <el-dropdown @command="js">
+      <el-dropdown @command="js" >
         <el-button type="primary">
           其他工具<i class="el-icon-caret-bottom el-icon--right"></i>
         </el-button>
@@ -23,6 +23,7 @@
           <el-dropdown-item command="2">纸张价格计算</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
+      <el-button type="primary" @click="Setting" icon="setting" style="margin-left:5px"></el-button>
       </span>
     </div>
   </nav>
@@ -42,6 +43,9 @@ export default {
       }else if(index==2){
         this.$router.push('/PaperTransform');
       }
+    },
+    Setting:function(){
+      this.$router.push('/PriceSet')
     }
   }
 }

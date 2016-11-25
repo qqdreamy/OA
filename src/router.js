@@ -20,6 +20,7 @@ import Model_Price_1 from './components/Model_Price_1.vue'
 import Carton from './View/Carton.vue'
 import Home from './View/home.vue'
 import Bag from './View/Bag.vue'
+import PriceSet from './view/PriceSet.vue'
 
 Vue.use(VueRouter)
 
@@ -62,6 +63,7 @@ const routes = [
   },
   { path: '/Calendar_Price',component:Calendar_Price },
   { path: '/Bag',component:Bag },
+  { path: '/PriceSet',component:PriceSet },
   { path: '/Model_Price',component:Model_Price,
     children:[
       { path:'Model_Price_1',component:Model_Price_1}

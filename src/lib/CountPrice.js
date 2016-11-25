@@ -1,10 +1,18 @@
 import SizeCount from '../lib/SizeCount.js'
+import wilddog from 'wilddog'
 const mythick={
   '2':1150,
   '1.5':850,
   '2.5':1450,
   '3':1750
 }
+//初始化野狗实时云配置
+let config = {
+  authDomain: "decbzoa.wilddog.com",
+  syncURL: "https://decbzoa.wilddogio.com"
+};
+wilddog.initializeApp(config);
+let ref = wilddog.sync().ref();
 module.exports.Print=function(long,wide,quantity,pType){//传入需印刷的长宽尺寸，以及数量，返回印刷价格
   let boxJson=require("../json/Technology.json");
   let printKB=long > 870 ? '全开' : long > 580 ? '对开' : '四开';
@@ -19,6 +27,39 @@ module.exports.Process=function(name,quantity){
   let p= typeof(boxJson[name][quantity])=="undefined" ? boxJson[name]['起步价']/quantity : boxJson[name][quantity];
   //let p = quantity < 1000 ? boxJson[name]['起步价']/quantity : boxJson[name][quantity];
   return p;
+}
+module.exports.CardboardPromise=function(long,wide,CardboardName,thick,cutt) {
+  //厚度转换
+  let mthick;
+  for (let i in mythick){
+    if(thick==i){
+      mthick=mythick[i];
+      break;
+    }
+  }
+  //是否含切纸费
+  let cuttPrice=0;
+  if(typeof(cutt)!="undefined" && cutt){
+    let boxJson=require("../json/cutt.json");
+    let kb=SizeCount.KbCountBig(1,long,wide).count;
+    let kbName=kb>25 ? '49k' : kb>10 ? '24k' : kb>5 ? '9k' : kb>2 ? '4k' : '9k';
+    cuttPrice=boxJson[thick][kbName];
+  }
+  return new Promise(function(resolve,reject){
+    ref.child('纸板').once('value').then(function(snapshot){
+      let boxJson=snapshot.val();
+      let dKB=SizeCount.KbCountBig(1,long,wide).count;
+      let zKB=SizeCount.KbCountBig(0,long,wide).count;
+      let tonPrice=boxJson[CardboardName].price;
+      var zPrice=(tonPrice/2327*mthick/500)+cuttPrice;//计算单张价格
+      var dPrice=(tonPrice/1884*mthick/500)+cuttPrice;
+      //console.log((dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB));
+      //return (dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB);
+      resolve((dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB));
+    }).catch(function(err){
+      reject(err);
+    });
+  });
 }
 //计算纸板价格
 module.exports.Cardboard=function(long,wide,CardboardName,thick,cutt){
@@ -38,13 +79,32 @@ module.exports.Cardboard=function(long,wide,CardboardName,thick,cutt){
     let kbName=kb>25 ? '49k' : kb>10 ? '24k' : kb>5 ? '9k' : kb>2 ? '4k' : '9k';
     cuttPrice=boxJson[thick][kbName];
   } 
-  let boxJson = require("../json/CardboardPrice.json");
-  let dKB=SizeCount.KbCountBig(1,long,wide).count;
+  //let boxJson = require("../json/CardboardPrice.json");
+  let boxJson;
+  /*ref.child('纸板').once('value',(snapshot,boxJson)=>{
+    boxJson=Object.keys(snapshot.val()).map(function(k){return snapshot.val()[k]});
+    console.log(boxJson);
+  });*/
+  ref.child('纸板').once('value').then(function(snapshot){
+    boxJson=snapshot.val();
+    console.log(boxJson['双灰板'].price);
+    let dKB=SizeCount.KbCountBig(1,long,wide).count;
+    let zKB=SizeCount.KbCountBig(0,long,wide).count;
+    let tonPrice=boxJson[CardboardName].price;
+    var zPrice=(tonPrice/2327*mthick/500)+cuttPrice;//计算单张价格
+    var dPrice=(tonPrice/1884*mthick/500)+cuttPrice;
+    console.log((dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB));
+    return (dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB);
+  }).catch(function(err){
+    console.info(err);
+  });
+  //console.log(boxJson);
+  /*let dKB=SizeCount.KbCountBig(1,long,wide).count;
   let zKB=SizeCount.KbCountBig(0,long,wide).count;
   let tonPrice=boxJson[CardboardName]['吨价'];
   var zPrice=(tonPrice/2327*mthick/500)+cuttPrice;//计算单张价格
   var dPrice=(tonPrice/1884*mthick/500)+cuttPrice;
-  return (dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB);
+  return (dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB);*/
 }
 //计算纸板价格-公式2//返回纸板总价-方便核对纸板开料价格
 module.exports.CheckCardboard=function(long,wide,tonPrice,thick,quantity,cutt){

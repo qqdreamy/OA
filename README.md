@@ -2,7 +2,7 @@
 <<<<<<< HEAD
 # oa
 
-> A Vue.js project
+> 使用vue+element-ui编写内部包装盒算价系统
 
 ## Build Setup
 
@@ -20,4 +20,4 @@ npm run build
 For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
 =======
 # OA
->>>>>>> 3acb07c3375be39127161d2586571c3c2b9b3f17
+
