@@ -13,6 +13,23 @@ let config = {
 };
 wilddog.initializeApp(config);
 let ref = wilddog.sync().ref();
+//印刷费
+module.exports.PrintPromise=function(long,wide,quantity,pType){
+  return new Promise((resolve,reject)=>{
+    ref.child('印刷').once('value').then(snapshot=>{
+      let boxJson=snapshot.val();
+      let printKB=long > 870 ? '全开' : long > 580 ? '对开' : '四开';
+      let pName= pType=='1'? '四色印刷' : pType=='3' ? '专色印刷' : '单色印刷';
+      let p=boxJson[pName+'-'+printKB].price;
+      console.log(p);
+      p=Number(p)+Number(quantity-1000 >0 ? boxJson[pName+'-'+printKB].addPrice*(quantity-1000) : 0);
+      //console.log(pType);
+      //console.log(p);
+      resolve(p/quantity);
+    });
+  })
+}
+//印刷费
 module.exports.Print=function(long,wide,quantity,pType){//传入需印刷的长宽尺寸，以及数量，返回印刷价格
   let boxJson=require("../json/Technology.json");
   let printKB=long > 870 ? '全开' : long > 580 ? '对开' : '四开';
@@ -27,6 +44,14 @@ module.exports.Process=function(name,quantity){
   let p= typeof(boxJson[name][quantity])=="undefined" ? boxJson[name]['起步价']/quantity : boxJson[name][quantity];
   //let p = quantity < 1000 ? boxJson[name]['起步价']/quantity : boxJson[name][quantity];
   return p;
+}
+module.exports.ProcessPromise=function(name,quantity){
+  return new Promise(function(resolve,reject){
+    ref.child('加工费').once('value').then((snapshot)=>{
+      let boxJson=snapshot.val();
+      resolve(typeof(boxJson[name][quantity])=="undefined"?boxJson[name]['起步价']/quantity : boxJson[name][quantity]);
+    })
+  });
 }
 module.exports.CardboardPromise=function(long,wide,CardboardName,thick,cutt) {
   //厚度转换
@@ -134,6 +159,25 @@ module.exports.CheckCardboard=function(long,wide,tonPrice,thick,quantity,cutt){
   return Price;
   //(dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB);
 }
+//计算包纸
+module.exports.ColorSurfacePromise=function(long,wide,paper,paperWeight,price){
+  if(typeof(price)!="undefined"){
+      return price/zKB;
+  }else{
+    return new Promise(function(resolve,reject){
+      let dKB=SizeCount.KbCountBig(1,long,wide).count;
+      let zKB=SizeCount.KbCountBig(0,long,wide).count;
+        ref.child('纸张').once('value').then(snapshot=>{
+          let boxJson=snapshot.val();
+          let tonPrice=boxJson[paper].price;
+          let zPrice=(tonPrice/2327*paperWeight/500);//计算单张价格
+          let dPrice=(tonPrice/1884*paperWeight/500);
+          resolve((dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB));
+        })
+    });
+  }
+}
+//计算包纸
 module.exports.ColorSurface=function(long,wide,paper,paperWeight,price){//长、宽、纸张名称、克重、自设纸价格
   let dKB=SizeCount.KbCountBig(1,long,wide).count;
   let zKB=SizeCount.KbCountBig(0,long,wide).count;

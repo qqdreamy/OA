@@ -27,6 +27,20 @@
       </span>
     </div>
   </nav>
+  <el-dialog title="输入管理员密码" v-model="dialogFormVisible">
+  <el-form :model="form">
+    <el-form-item label="管理员邮箱" :label-width="formLabelWidth">
+      <el-input v-model="form.email" auto-complete="off"></el-input>
+    </el-form-item>
+    <el-form-item  label="密码" :label-width="formLabelWidth">
+      <el-input type="password" v-model="form.password" auto-complete="off"></el-input>
+    </el-form-item>
+  </el-form>
+  <div slot="footer" class="dialog-footer">
+    <el-button @click="dialogFormVisible = false">取 消</el-button>
+    <el-button type="primary" @click="Login">确 定</el-button>
+  </div>
+</el-dialog>
 </div>
 </template>
 
@@ -34,6 +48,11 @@
 export default {
   data () {
     return {
+      dialogFormVisible:false,
+      form: {
+        email: 'liubowen@qq.com',
+        password: '',
+      }
     }
   },
   methods:{
@@ -45,7 +64,21 @@ export default {
       }
     },
     Setting:function(){
-      this.$router.push('/PriceSet')
+      this.dialogFormVisible=true;
+      //this.$router.push('/PriceSet')
+    },
+    Login:function(){
+      var config = {
+        authDomain: "decbzoa.wilddog.com",
+        syncURL: "https://decbzoa.wilddogio.com"
+      };
+      wilddog.auth().signInWithEmailAndPassword(this.form.email, this.form.password)
+      .then(()=> {
+        this.dialogFormVisible=false;
+        this.$router.push('/PriceSet');
+      }).catch(function (err) {
+          console.info('login failed ->',err);
+      });
     }
   }
 }

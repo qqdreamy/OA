@@ -10,7 +10,7 @@
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
-    "element-ui": "^1.0.2",
+    "element-ui": "^1.0.3",
     "vue": "^2.0.0",
     "vue-loader": "^9.5.0",
     "wilddog": "^2.3.5"

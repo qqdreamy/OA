@@ -5,12 +5,15 @@
       <el-table :data="Cardboard" style="width: 100%">
         <el-table-column  prop="name" label="名称" width="180">
         </el-table-column>
-        <el-table-column prop="price" label="价格" width="180">
+        <el-table-column prop="price" label="吨价" width="180">
         </el-table-column>
-        <el-table-column :context="_self" inline-template label="操作">
+        <el-table-column :context="_self" inline-template label="操作" >
           <el-button size="small" @click="handleEdit($index, row)">
           编辑
           </el-button>
+        </el-table-column>
+        <el-table-column inline-template prop="price" label="计算公式参考">
+          <label>吨价÷[2327,1884]×克重÷500=单张价格</label>
         </el-table-column>
       </el-table>
     </el-tab-pane>
@@ -22,6 +25,19 @@
         </el-table-column>
         <el-table-column :context="_self" inline-template label="操作">
           <el-button size="small" @click="CPEdit($index, row)">
+          编辑
+          </el-button>
+        </el-table-column>
+      </el-table>
+    </el-tab-pane>
+    <el-tab-pane label="提绳">
+      <el-table :data="ropes" style="width: 100%">
+        <el-table-column prop="name" label="名称" width="180">
+        </el-table-column>
+        <el-table-column prop="price" label="价格" width="180">
+        </el-table-column>
+        <el-table-column :context="_self" inline-template label="操作">
+          <el-button size="small" @click="RopesEdit($index, row)">
           编辑
           </el-button>
         </el-table-column>
@@ -58,22 +74,24 @@
       </el-table>
     </el-tab-pane>
     <el-tab-pane label="加工费">
-      <el-table :data="process" style="width: 100%">
+      <el-table :data="process" border style="width: 100%">
         <el-table-column fixed prop="name" label="名称" width="180">
         </el-table-column>
         <el-table-column prop="起步价" label="起步价" width="180">
         </el-table-column>
-        <el-table-column prop="500" label="500报价" width="180">
-        </el-table-column>
-        <el-table-column prop="1000" label="1000报价" width="180">
-        </el-table-column>
-        <el-table-column prop="2000" label="2000报价" width="180">
-        </el-table-column>
-        <el-table-column prop="5000" label="5000报价" width="180">
-        </el-table-column>
-        <el-table-column prop="10000" label="10000报价" width="180">
-        </el-table-column>
-        <el-table-column prop="20000" label="20000报价" width="180">
+        <el-table-column label="报价">
+          <el-table-column prop="500" label="500个" width="180">
+          </el-table-column>
+          <el-table-column prop="1000" label="1000个" width="180">
+          </el-table-column>
+          <el-table-column prop="2000" label="2000个" width="180">
+          </el-table-column>
+          <el-table-column prop="5000" label="5000个" width="180">
+          </el-table-column>
+          <el-table-column prop="10000" label="10000个" width="180">
+          </el-table-column>
+          <el-table-column prop="20000" label="20000个" width="180">
+          </el-table-column>
         </el-table-column>
         <el-table-column fixed="right" :context="_self" inline-template label="操作">
           <el-button size="small" @click="ProcessBox($index, row)">
@@ -92,12 +110,12 @@
       <el-form-item label="价格" :label-width="formLabelWidth">
         <el-input v-model="form.price" auto-complete="off"></el-input>
       </el-form-item>
-      <template v-if="activeName=='3' || activeName=='4'">
+      <template v-if="activeName=='4' || activeName=='5'">
       <el-form-item label="递增价格" :label-width="formLabelWidth">
         <el-input v-model="form.addPrice" auto-complete="off"></el-input>
       </el-form-item>
       </template>
-      <template v-if="activeName=='5'">
+      <template v-if="activeName=='6'">
       <el-form-item label="500价格" :label-width="formLabelWidth">
         <el-input v-model="form.quantity500" auto-complete="off"></el-input>
       </el-form-item>
@@ -109,6 +127,12 @@
       </el-form-item>
       <el-form-item label="5000价格" :label-width="formLabelWidth">
         <el-input v-model="form.quantity5000" auto-complete="off"></el-input>
+      </el-form-item>
+      <el-form-item label="10000价格" :label-width="formLabelWidth">
+        <el-input v-model="form.quantity10000" auto-complete="off"></el-input>
+      </el-form-item>
+      <el-form-item label="20000价格" :label-width="formLabelWidth">
+        <el-input v-model="form.quantity20000" auto-complete="off"></el-input>
       </el-form-item>
       </template>
     </el-form>
@@ -135,14 +159,17 @@ export default {
       Print:[],
       finishPrint:[],
       process:[],
+      ropes:[],
       form: {
         name: '',
-        price:'',
-        addPrice:'',
-        quantity500:'',
-        quantity1000:'',
-        quantity2000:'',
-        quantity5000:''
+        price:'0',
+        addPrice:'0',
+        quantity500:'0',
+        quantity1000:'0',
+        quantity2000:'0',
+        quantity5000:'0',
+        quantity10000:'0',
+        quantity20000:'0'
       }
     }
   },
@@ -169,6 +196,9 @@ export default {
     this.ref.child('加工费').on('value',(snapshot)=>{
       this.process=Object.keys(snapshot.val()).map(function(k){return snapshot.val()[k]});
     });
+    this.ref.child('提绳').on('value',(snapshot)=>{
+      this.ropes=Object.keys(snapshot.val()).map(function(k){return snapshot.val()[k]});
+    });
   },
   methods:{
     UpdatePrice:function(){
@@ -190,6 +220,11 @@ export default {
           "price": this.form.price
         });
       }else if(this.activeName=='3'){
+        var hopperRef = this.ref.child("提绳").child(this.form.name);
+        hopperRef.update({
+          "price": this.form.price
+        });
+      }else if(this.activeName=='4'){
         var hopperRef = this.ref.child("印刷").child(this.form.name);
         hopperRef.update({
           "price": this.form.price,
@@ -202,16 +237,22 @@ export default {
         }).catch(function(err){
           //error
         });
-      }else if(this.activeName=='4'){
+      }else if(this.activeName=='5'){
         let hopperRef=this.ref.child("印后").child(this.form.name);
         hopperRef.update({
           "price": this.form.price,
           "addPrice":this.form.addPrice
         });
-      }else if(this.activeName=='5'){
+      }else if(this.activeName=='6'){
         let hopperRef=this.ref.child("加工费").child(this.form.name);
         hopperRef.update({
           "起步价": this.form.price,
+          "500":this.form.quantity500,
+          "1000":this.form.quantity1000,
+          "2000":this.form.quantity2000,
+          "5000":this.form.quantity5000,
+          "10000":this.form.quantity10000,
+          "20000":this.form.quantity20000
         });
       }
       this.dialogFormVisible=false;
@@ -227,6 +268,11 @@ export default {
     handleEdit(index, row) {
       this.form.name=this.Cardboard[index].name;
       this.form.price=this.Cardboard[index].price;
+      this.dialogFormVisible=true;
+    },
+    RopesEdit(index,row){
+      this.form.name=this.ropes[index].name;
+      this.form.price=this.ropes[index].price;
       this.dialogFormVisible=true;
     },
     PrintEdit(index,row){
@@ -248,6 +294,8 @@ export default {
       this.form.quantity1000=this.process[index]['1000'];
       this.form.quantity2000=this.process[index]['2000'];
       this.form.quantity5000=this.process[index]['5000'];
+      this.form.quantity10000=this.process[index]['10000'];
+      this.form.quantity20000=this.process[index]['20000'];
       this.dialogFormVisible=true;
     },
     CountPrice:function(){

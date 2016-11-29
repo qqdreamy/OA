@@ -268,38 +268,58 @@ export default {
       this.loading=true;
       var CountPrice=0;
       if(this.isCardboard=='含纸板'){//判断是否含纸板
+        //纸板
         let p;
         js_CountPrice.CardboardPromise(this.long,this.wide,this.cardboard,this.thick,true).then(function(value){
           p=value*2;
         }).then(()=>{
+          //中条
           return js_CountPrice.CardboardPromise(this.longCenter,this.center,this.cardboard,this.thick,true).then(value=>{
             p+=value;
             this.boxPrice.Cardboard=p.toFixed(2);
           });
         }).then(()=>{
-            //计算包纸
-            if(this.isPaper=='含包纸'){
-              if(this.paper=='自设纸'){
-                this.boxPrice.Page=js_CountPrice.ColorSurface(this.hullcolorsurfaceLong,this.hullcolorsurfaceWide,this.paper,this.paperWeight,this.pagePrice).toFixed(2);
-              }else {
-                this.boxPrice.Page=js_CountPrice.ColorSurface(this.hullcolorsurfaceLong,this.hullcolorsurfaceWide,this.paper,this.paperWeight).toFixed(2);
-              }
+          //加工费
+          return js_CountPrice.ProcessPromise('台历架',this.quantity).then(value=>{
+            this.boxPrice.process=value;
+          });
+        }).then(()=>{
+          //外裱包纸
+          if(this.isPaper=='含包纸'){
+            if(this.paper=='自设纸'){
+              this.boxPrice.Page=js_CountPrice.ColorSurfacePromise(this.hullcolorsurfaceLong,this.hullcolorsurfaceWide,this.paper,this.paperWeight,this.pagePrice).toFixed(2);
+            }else {
+              return js_CountPrice.ColorSurfacePromise(this.hullcolorsurfaceLong,this.hullcolorsurfaceWide,this.paper,this.paperWeight).then(value=>{
+                this.boxPrice.Page=value.toFixed(2);
+              });
             }
-            if(this.isInsidePaper){
-              if(this.insidePaper=='自设纸'){
-                this.boxPrice.insidePaper=js_CountPrice.ColorSurface(this.InsidePaperLong,this.InsidePaperWide,this.insidePaper,this.insidePaperWeight,this.insidePagePrice).toFixed(2);
-              }else{
-                this.boxPrice.insidePaper=js_CountPrice.ColorSurface(this.InsidePaperLong,this.InsidePaperWide,this.insidePaper,this.insidePaperWeight).toFixed(2);
-              }
+          }
+        }).then(()=>{
+          //内贴包纸
+          if(this.isInsidePaper){
+            if(this.insidePaper=='自设纸'){
+              this.boxPrice.insidePaper=js_CountPrice.ColorSurfacePromise(this.InsidePaperLong,this.InsidePaperWide,this.insidePaper,this.insidePaperWeight,this.insidePagePrice).toFixed(2);
+            }else{
+              return this.boxPrice.insidePaper=js_CountPrice.ColorSurfacePromise(this.InsidePaperLong,this.InsidePaperWide,this.insidePaper,this.insidePaperWeight).then(value=>{
+                this.boxPrice.insidePaper=value.toFixed(2);
+              });
             }
-            //内贴印刷费
-            if(this.insidePrint!=4 && this.isInsidePaper){
-              this.boxPrice.insidePrint=js_CountPrice.Print(this.InsidePaperLong,this.InsidePaperWide,this.quantity);
-            }
-            //印刷费用
-            if(this.print!='4' && this.isPaper=='含包纸'){
-              this.boxPrice.print=js_CountPrice.Print(this.long,this.wide,this.quantity)
-            }
+          }
+        }).then(()=>{
+          //包纸印刷
+          if(this.print!='4' && this.isPaper=='含包纸'){
+            return js_CountPrice.PrintPromise(this.long,this.wide,this.quantity,this.print).then(value=>{
+              this.boxPrice.print=value.toFixed(2);
+            });
+          }
+        }).then(()=>{
+          //内贴印刷费
+          if(this.insidePrint!=4 && this.isInsidePaper){
+            return js_CountPrice.PrintPromise(this.InsidePaperLong,this.InsidePaperWide,this.quantity,this.insidePrint).then(value=>{
+              this.boxPrice.insidePrint=value.toFixed(2);
+            });
+          }
+        }).then(()=>{
             //包纸覆膜
             if(this.film){
               this.boxPrice.film=js_CountPrice.film(this.hullcolorsurfaceLong,this.hullcolorsurfaceWide,this.quantity).toFixed(2);
@@ -312,8 +332,6 @@ export default {
             if(this.ispermed){
               this.boxPrice.permed=js_CountPrice.Permed(this.permed,this.quantity);
             }
-            //加工费
-            this.boxPrice.process=js_CountPrice.Process('台历架',this.quantity);
             //自动计算总价
             for (var i in this.boxPrice){
               this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
