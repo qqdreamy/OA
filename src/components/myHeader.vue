@@ -77,7 +77,7 @@ export default {
         this.dialogFormVisible=false;
         this.$router.push('/PriceSet');
       }).catch(function (err) {
-          console.info('login failed ->',err);
+          console.log('login failed ->',err);
       });
     }
   }

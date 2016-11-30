@@ -50,8 +50,12 @@ module.exports.ProcessPromise=function(name,quantity){
     ref.child('加工费').once('value').then((snapshot)=>{
       let boxJson=snapshot.val();
       resolve(typeof(boxJson[name][quantity])=="undefined"?boxJson[name]['起步价']/quantity : boxJson[name][quantity]);
+    }).catch(()=>{
+      console.log('errerr');
     })
-  });
+  }).catch(()=>{
+    reject('errrrr');
+  })
 }
 module.exports.CardboardPromise=function(long,wide,CardboardName,thick,cutt) {
   //厚度转换
@@ -78,11 +82,9 @@ module.exports.CardboardPromise=function(long,wide,CardboardName,thick,cutt) {
       let tonPrice=boxJson[CardboardName].price;
       var zPrice=(tonPrice/2327*mthick/500)+cuttPrice;//计算单张价格
       var dPrice=(tonPrice/1884*mthick/500)+cuttPrice;
-      //console.log((dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB));
-      //return (dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB);
       resolve((dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB));
     }).catch(function(err){
-      reject(err);
+      console.log(err);
     });
   });
 }
@@ -148,13 +150,13 @@ module.exports.ColorSurfacePromise=function(long,wide,paper,paperWeight,price){
     return new Promise(function(resolve,reject){
       let dKB=SizeCount.KbCountBig(1,long,wide).count;
       let zKB=SizeCount.KbCountBig(0,long,wide).count;
-        ref.child('纸张').once('value').then(snapshot=>{
-          let boxJson=snapshot.val();
-          let tonPrice=boxJson[paper].price;
-          let zPrice=(tonPrice/2327*paperWeight/500);//计算单张价格
-          let dPrice=(tonPrice/1884*paperWeight/500);
-          resolve((dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB));
-        })
+      ref.child('纸张').once('value').then(snapshot=>{
+        let boxJson=snapshot.val();
+        let tonPrice=boxJson[paper].price;
+        let zPrice=(tonPrice/2327*paperWeight/500);//计算单张价格
+        let dPrice=(tonPrice/1884*paperWeight/500);
+        resolve((dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB));
+      })
     });
   }
 }
@@ -175,11 +177,32 @@ module.exports.ColorSurface=function(long,wide,paper,paperWeight,price){//长、
   }
 }
 //卡合
+module.exports.KaHePromise=function(long,wide,quantity){
+  return new Promise((resolve,reject)=>{
+    ref.child('印后').once('value').then(snapshot=>{
+      let boxJson=snapshot.val();
+      let p=boxJson['卡合'].price;
+      p=p+Number(quantity-1000 >0 ? boxJson['卡合'].addPrice*(quantity-1000) : 0);
+      resolve(p/quantity);
+    })
+  })
+}
+//卡合
 module.exports.KaHe=function(long,wide,quantity){
   let boxJson=require("../json/Technology.json");
   let p=boxJson['卡合'].price;
   p=p+Number(quantity-1000 >0 ? boxJson['卡合'].addPrice*(quantity-1000) : 0);
   return (p/quantity);
+}
+//覆膜
+module.exports.FilmPromise=function(long,wide,quantity){
+  return new Promise((resolve,reject)=>{
+    ref.child('印后').once('value').then((snapshot)=>{
+      let boxJson=snapshot.val();
+      let Square=long/1000*wide/1000;
+      resolve(Square*boxJson['覆膜'].addPrice*quantity > boxJson['覆膜'].price ? Square*boxJson['覆膜'].addPrice : boxJson['覆膜'].price/quantity);
+    })
+  });
 }
 //覆膜
 module.exports.film=function(long,wide,quantity){//按照平方计算价格
@@ -201,6 +224,17 @@ module.exports.Carton=function(long,wide,height) {
   const cheight=330;
   const p=5;
   return p/SizeCount.carton(clong,cwide,cheight,long,wide,height);
+}
+//烫金
+module.exports.PermedPromise=function(type,quantity) {
+  return new Promise((resolve,reject)=>{
+    ref.child('印后').once('value').then(snapshot=>{
+      let boxJson=snapshot.val();
+      let p=boxJson['烫金'].price;
+      p=p+Number(quantity-1000 >0 ? boxJson['烫金'].addPrice*(quantity-1000) : 0);
+      resolve(p/quantity*type);
+    });
+  });
 }
 //烫金价格
 module.exports.Permed=function(type,quantity) {

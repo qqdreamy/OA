@@ -108,31 +108,31 @@
         <el-col :span="24"><label>{{form.name}}</label></el-col>
       </el-form-item>
       <el-form-item label="价格" :label-width="formLabelWidth">
-        <el-input v-model="form.price" auto-complete="off"></el-input>
+        <el-input v-model.number="form.price" auto-complete="off"></el-input>
       </el-form-item>
       <template v-if="activeName=='4' || activeName=='5'">
       <el-form-item label="递增价格" :label-width="formLabelWidth">
-        <el-input v-model="form.addPrice" auto-complete="off"></el-input>
+        <el-input v-model.number="form.addPrice" auto-complete="off"></el-input>
       </el-form-item>
       </template>
       <template v-if="activeName=='6'">
       <el-form-item label="500价格" :label-width="formLabelWidth">
-        <el-input v-model="form.quantity500" auto-complete="off"></el-input>
+        <el-input v-model.number="form.quantity500" auto-complete="off"></el-input>
       </el-form-item>
       <el-form-item label="1000价格" :label-width="formLabelWidth">
-        <el-input v-model="form.quantity1000" auto-complete="off"></el-input>
+        <el-input v-model.number="form.quantity1000" auto-complete="off"></el-input>
       </el-form-item>
       <el-form-item label="2000价格" :label-width="formLabelWidth">
-        <el-input v-model="form.quantity2000" auto-complete="off"></el-input>
+        <el-input v-model.number="form.quantity2000" auto-complete="off"></el-input>
       </el-form-item>
       <el-form-item label="5000价格" :label-width="formLabelWidth">
-        <el-input v-model="form.quantity5000" auto-complete="off"></el-input>
+        <el-input v-model.number="form.quantity5000" auto-complete="off"></el-input>
       </el-form-item>
       <el-form-item label="10000价格" :label-width="formLabelWidth">
-        <el-input v-model="form.quantity10000" auto-complete="off"></el-input>
+        <el-input v-model.number="form.quantity10000" auto-complete="off"></el-input>
       </el-form-item>
       <el-form-item label="20000价格" :label-width="formLabelWidth">
-        <el-input v-model="form.quantity20000" auto-complete="off"></el-input>
+        <el-input v-model.number="form.quantity20000" auto-complete="off"></el-input>
       </el-form-item>
       </template>
     </el-form>
@@ -162,14 +162,14 @@ export default {
       ropes:[],
       form: {
         name: '',
-        price:'0',
-        addPrice:'0',
-        quantity500:'0',
-        quantity1000:'0',
-        quantity2000:'0',
-        quantity5000:'0',
-        quantity10000:'0',
-        quantity20000:'0'
+        price:0,
+        addPrice:0,
+        quantity500:0,
+        quantity1000:0,
+        quantity2000:0,
+        quantity5000:0,
+        quantity10000:0,
+        quantity20000:0
       }
     }
   },
