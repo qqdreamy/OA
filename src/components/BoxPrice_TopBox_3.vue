@@ -378,18 +378,27 @@ export default {
     },
     CountPrice:function(){
       let cuttQuantity=0;
+      js_CountPrice.ProcessPromise('天地盖3',this.quantity).then(value=>{
+        this.boxPrice.process=value.toFixed(2);
+      }).then(()=>{
+        if(this.isCardboard=='含纸板'){//判断是否含纸板  
+          if(this.technique=='1'){//计算V槽
+            this.boxPrice.Vcut=0.4;
+          }else{
+            this.boxPrice.Vcut=0.1;
+            cuttQuantity+=2;
+          }
+        }
+        return js_CountPrice.CardboardPromise(this.topCardboardLong+this.changeNumber,this.topCardboardWide+this.changeNumber,this.cardboard,this.thick,true).then(value=>{
+          this.boxPrice.topCardboard=value.toFixed(2);
+        })
+      })
       if(this.isCardboard=='含纸板'){//判断是否含纸板
         this.boxPrice.topCardboard=js_CountPrice.Cardboard(this.topCardboardLong+this.changeNumber,this.topCardboardWide+this.changeNumber,this.cardboard,this.thick,true).toFixed(2);
         this.boxPrice.bottomCardboard=js_CountPrice.Cardboard(this.bottomCardboardLong+this.changeNumber,this.bottomCardboardWide+this.changeNumber,this.cardboard,this.thick,true).toFixed(2);
         //1.3围框纸板目前统一按两部分计算开别
         this.boxPrice.inclosePrice=js_CountPrice.Cardboard(this.incloseCardboardLong,this.incloseCardboardWide,this.IncloseCardboard,this.IncloseThick,true).toFixed(2);
-        //计算V槽
-        if(this.technique=='1'){
-          this.boxPrice.Vcut=0.4;
-        }else{
-          this.boxPrice.Vcut=0.1;
-          cuttQuantity+=2;
-        }
+
       }
       //底-包纸
       if(this.isBottomPaper){
@@ -429,7 +438,7 @@ export default {
       //卡合
       this.boxPrice.made=(js_CountPrice.KaHe(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity)*cuttQuantity).toFixed(2);
       //加工费
-      this.boxPrice.process=js_CountPrice.Process('天地盖3',this.quantity);
+      //this.boxPrice.process=js_CountPrice.Process('天地盖3',this.quantity);
       //覆膜
       if(this.film){
         this.boxPrice.film=js_CountPrice.film(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity).toFixed(2);
