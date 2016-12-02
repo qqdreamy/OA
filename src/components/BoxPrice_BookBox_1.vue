@@ -1,6 +1,6 @@
 <template>
 <div>
-  <el-form label-width="80px">
+  <el-form label-width="80px" v-loading.body="loading" element-loading-text="正在计算ing">
     <el-form-item label="成品尺寸">
       <el-col :span="4">
         <el-input placeholder="" v-model.number="long">
@@ -305,6 +305,7 @@ export default {
       permed:'1',
       dialogPriceVisible:false,
       isCarton:true,
+      loading:false,
       boxPrice:{
         count:0,
         hullPage:0,
@@ -391,90 +392,108 @@ export default {
     },
     CountPrice:function(){
       let PrintPrint=0;
-      let cuttQuantity=1;
-      //计算刀版数量
-      if(this.isCardboard=='含纸板'){//判断是否含纸板
-        //皮壳纸板
-        this.boxPrice.hullCardboard=js_CountPrice.Cardboard(this.hullLong+this.techniqueCheage,this.hullWide+this.techniqueCheage,this.cardboard,this.thick,true).toFixed(2);
-        this.boxPrice.boxOuterCardboard=js_CountPrice.Cardboard(this.boxOuterCardboardLong+this.techniqueCheage,this.boxOuterCardboardWide+this.techniqueCheage,this.boxOuterCardboard,this.boxOuterThick,true).toFixed(2);
-        console.log('皮壳尺寸：'+this.hullLong+this.techniqueCheage +'*'+ this.hullWide);
-        console.log('内盒尺寸：'+this.boxOuterCardboardLong +'*'+ this.boxOuterCardboardWide);
-        //计算V槽
-        if(this.technique=='1'){
-          this.boxPrice.Vcut=0.3;
-        }else{
-          
+      let cuttQuantity=0;//计算刀版数量
+      this.loading=true;
+      js_CountPrice.ProcessPromise('书型盒1',this.quantity).then(value=>{
+        this.boxPrice.process=value.toFixed(2);
+      }).then(()=>{//纸板
+        if(this.isCardboard=='含纸板'){
+          return js_CountPrice.CardboardPromise(this.hullLong+this.techniqueCheage,this.hullWide+this.techniqueCheage,this.cardboard,this.thick,true).then(value=>{
+            this.boxPrice.hullCardboard=value.toFixed(2);
+          }).then(()=>{
+            return js_CountPrice.CardboardPromise(this.boxOuterCardboardLong+this.techniqueCheage,this.boxOuterCardboardWide+this.techniqueCheage,this.boxOuterCardboard,this.boxOuterThick,true).then(value=>{
+              this.boxPrice.boxOuterCardboard=value.toFixed(2);
+            })
+          })  
+          if(this.technique=='1'){//计算V槽
+            this.boxPrice.Vcut=0.3;
+          }else{
+            this.boxPrice.Vcut=0.1;
+            cuttQuantity+=2;
+          }
         }
-        //计算刀版数量
-        cuttQuantity+=2;
-      }
-      //计算皮壳包纸
-      if(this.isPaper=='含包纸'){//长、宽、纸张名称、克重、自设纸价格
-        if(this.paper=='自设纸'){
-          this.boxPrice.hullPage=js_CountPrice.ColorSurface(this.hullColorSurfaceLong,this.hullColorSurfaceWide,this.paper,this.paperWeight,this.pagePrice).toFixed(2);
-        }else{
-          this.boxPrice.hullPage=js_CountPrice.ColorSurface(this.hullColorSurfaceLong,this.hullColorSurfaceWide,this.paper,this.paperWeight).toFixed(2);
+      }).then(()=>{//皮壳包纸
+        if(this.isPaper=='含包纸'){
+          if(this.paper=='自设纸'){
+            this.boxPrice.hullPage=js_CountPrice.ColorSurface(this.hullColorSurfaceLong,this.hullColorSurfaceWide,this.paper,this.paperWeight,this.pagePrice).toFixed(2);
+          }else{
+            return js_CountPrice.ColorSurfacePromise(this.hullColorSurfaceLong,this.hullColorSurfaceWide,this.paper,this.paperWeight).then(value=>{
+              this.boxPrice.hullPage=value.toFixed(2);
+            });
+          }
+          if (this.isHullFilm){//覆膜
+            this.boxPrice.hullFilm=js_CountPrice.film(this.hullColorSurfaceLong,this.hullColorSurfaceWide,this.quantity).toFixed(2);
+          }
         }
-        //覆膜
-        if (this.isHullFilm){
-          this.boxPrice.hullFilm=js_CountPrice.film(this.hullColorSurfaceLong,this.hullColorSurfaceWide,this.quantity).toFixed(2);
+      }).then(()=>{//内盒包纸
+        if(this.isOuterPaper=='含包纸'){
+          if(this.outerPaper=='自设纸'){
+            this.boxPrice.boxOuterPage=js_CountPrice.ColorSurface(this.boxOuterColorSurfaceLong,this.boxOuterColorSurfaceWide,this.outerPaper,this.outerPaperWeight,this.outerPagePrice).toFixed(2);
+          }else{
+            return js_CountPrice.ColorSurfacePromise(this.boxOuterColorSurfaceLong,this.boxOuterColorSurfaceWide,this.outerPaper,this.outerPaperWeight).then(value=>{
+              this.boxPrice.boxOuterPage=value.toFixed(2);
+            })
+          }
+          //内盒覆膜
+          if(this.isOuterFilm){
+            return js_CountPrice.FilmPromise(this.boxOuterColorSurfaceLong,this.boxOuterColorSurfaceWide,this.quantity).then(value=>{
+              this.boxPrice.outerFilm=value.toFixed(2);
+            });
+          }
         }
-      }
-      //内盒包纸
-      if(this.isOuterPaper=='含包纸'){
-        if(this.outerPaper=='自设纸'){
-          this.boxPrice.boxOuterPage=js_CountPrice.ColorSurface(this.boxOuterColorSurfaceLong,this.boxOuterColorSurfaceWide,this.outerPaper,this.outerPaperWeight,this.outerPagePrice).toFixed(2);
-        }else{
-          this.boxPrice.boxOuterPage=js_CountPrice.ColorSurface(this.boxOuterColorSurfaceLong,this.boxOuterColorSurfaceWide,this.outerPaper,this.outerPaperWeight).toFixed(2);
+      }).then(()=>{//印刷费
+        if(this.print!='4' && this.isPaper=='含包纸'){
+          return js_CountPrice.PrintPromise(this.hullColorSurfaceLong,this.hullColorSurfaceWide,this.quantity,this.print).then(value=>{
+            this.boxPrice.hullPrint=value.toFixed(2);
+          }).then(()=>{//内盒
+            return js_CountPrice.PrintPromise(this.boxOuterColorSurfaceLong,this.boxOuterColorSurfaceWide,this.quantity,this.outerPrint).then(value=>{
+              this.boxPrice.outerPrint=value.toFixed(2);
+            })
+          }).then(()=>{//内贴
+            return js_CountPrice.PrintPromise(this.stickerLong,this.stickerWide,this.quantity,this.stickerPrint).then(value=>{
+              this.boxPrice.stickerPrint=value.toFixed(2);
+            })
+          })
         }
-        //内盒覆膜
-        if(this.isOuterFilm){
-          this.boxPrice.outerFilm=js_CountPrice.film(this.boxOuterColorSurfaceLong,this.boxOuterColorSurfaceWide,this.quantity).toFixed(2);
+      }).then(()=>{//卡合
+        return js_CountPrice.KaHePromise(this.hullColorSurfaceLong,this.hullColorSurfaceWide,this.quantity).then(value=>{
+          cuttQuantity+=1;
+          this.boxPrice.made=(value*cuttQuantity).toFixed(2);
+        })
+      }).then(()=>{//内贴纸
+        if(this.isSticker){
+          if(this.StickerPaper=='自设纸'){
+            this.boxPrice.sticker=js_CountPrice.ColorSurface(this.stickerLong,this.stickerWide,this.StickerPaper,this.StickerPaperWeight,this.StickerPagePrice).toFixed(2);
+          }else{
+            js_CountPrice.ColorSurfacePromise(this.stickerLong,this.stickerWide,this.StickerPaper,this.StickerPaperWeight).then(value=>{
+              this.boxPrice.sticker=value.toFixed(2);
+            });
+          }
+          //覆膜
+          if(this.isStickerFilm){
+            return js_CountPrice.FilmPromise(this.stickerLong,this.stickerWide,this.quantity).then(value=>{
+              this.boxPrice.stickerFilm=value.toFixed(2);
+            })
+          }
         }
-      }
-      //皮壳印刷费用
-      if(this.print!='4' && this.isPaper=='含包纸'){//传入需印刷的长宽尺寸，以及数量，返回印刷价格
-        this.boxPrice.hullPrint=Number(js_CountPrice.Print(this.hullColorSurfaceLong,this.hullColorSurfaceWide,this.quantity,this.print));
-      }
-      //内盒印刷费用
-      if(this.outerPrint!='4' && this.isOuterPaper=='含包纸'){
-        this.boxPrice.outerPrint=Number(js_CountPrice.Print(this.boxOuterColorSurfaceLong,this.boxOuterColorSurfaceWide,this.quantity,this.outerPrint));
-      }
-      //内贴印刷费
-      if(this.stickerPrint!='4' && this.isSticker){
-        this.boxPrice.stickerPrint=js_CountPrice.Print(this.stickerLong,this.stickerWide,this.quantity,this.stickerPrint);
-      }
-      //this.boxPrice.print=PrintPrint;
-      //加工费
-      this.boxPrice.process=js_CountPrice.Process('书型盒1',this.quantity);
-      //卡合
-      this.boxPrice.made=(js_CountPrice.KaHe(this.hullColorSurfaceLong,this.hullColorSurfaceWide,this.quantity)*cuttQuantity).toFixed(2);
-      //内贴
-      if(this.isSticker){
-        if(this.StickerPaper=='自设纸'){
-          this.boxPrice.sticker=js_CountPrice.ColorSurface(this.stickerLong,this.stickerWide,this.StickerPaper,this.StickerPaperWeight,this.StickerPagePrice).toFixed(2);
-        }else{
-          this.boxPrice.sticker=js_CountPrice.ColorSurface(this.stickerLong,this.stickerWide,this.StickerPaper,this.StickerPaperWeight).toFixed(2);
+      }).then(()=>{//烫金
+        if(this.ispermed){
+          return js_CountPrice.Permed(this.permed,this.quantity).then(value=>{
+            this.boxPrice.permed=value.toFixed(2);
+          })
         }
-        //覆膜
-        if(this.isStickerFilm){
-          this.boxPrice.stickerFilm=js_CountPrice.film(this.stickerLong,this.stickerWide,this.quantity).toFixed(2);
-        }
-      }
-      //烫金
-      if(this.ispermed){
-        this.boxPrice.permed=js_CountPrice.Permed(this.permed,this.quantity);
-      }
-      //纸箱价格计算
-      if(this.isCarton){
+      }).then(()=>{
+      if(this.isCarton){//纸箱价格计算
         this.boxPrice.carton=js_CountPrice.Carton(this.long,this.wide,this.height).toFixed(2);
       }
-      //合计价格计算
-      for (var i in this.boxPrice){
+      for (var i in this.boxPrice){//合计价格计算
         this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
       }
       this.boxPrice.count=this.boxPrice.count.toFixed(2);
       this.dialogPriceVisible=true;
+      this.loading=false;
+      })
+
     }
   }
 }

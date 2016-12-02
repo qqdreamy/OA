@@ -1,6 +1,6 @@
 <template>
 <div>
-  <el-form label-width="80px">
+  <el-form label-width="80px" v-loading.body="loading" element-loading-text="正在计算ing">
     <el-form-item label="成品尺寸">
       <el-col :span="4">
         <el-input placeholder="" v-model="long">
@@ -294,6 +294,7 @@ export default {
       inclosePagePrice:0,
       inclosePrint:'4',
       isCarton:true,
+      loading:false,
       boxPrice:{
         count:0,
         topPage:0,
@@ -377,6 +378,7 @@ export default {
       }
     },
     CountPrice:function(){
+      this.loading=true;
       let cuttQuantity=0;
       js_CountPrice.ProcessPromise('天地盖3',this.quantity).then(value=>{
         this.boxPrice.process=value.toFixed(2);
@@ -388,82 +390,101 @@ export default {
             this.boxPrice.Vcut=0.1;
             cuttQuantity+=2;
           }
+          return js_CountPrice.CardboardPromise(this.topCardboardLong+this.changeNumber,this.topCardboardWide+this.changeNumber,this.cardboard,this.thick,true).then(value=>{
+            this.boxPrice.topCardboard=value.toFixed(2);
+          }).then(()=>{
+            return js_CountPrice.CardboardPromise(this.bottomCardboardLong+this.changeNumber,this.bottomCardboardWide+this.changeNumber,this.cardboard,this.thick,true).then(value=>{
+              this.boxPrice.bottomCardboard=value.toFixed(2);
+            })
+          }).then(()=>{
+            return js_CountPrice.CardboardPromise(this.incloseCardboardLong,this.incloseCardboardWide,this.IncloseCardboard,this.IncloseThick,true).then(value=>{
+              this.boxPrice.inclosePrice=value.toFixed(2);
+            })
+          })
+       }
+      }).then(()=>{//盖包纸
+        if(this.isPaper=='含包纸'){
+          if(this.paper=='自设纸'){
+            this.boxPrice.topPage=js_CountPrice.ColorSurface(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.paper,this.paperWeight,this.pagePrice).toFixed(2);
+          }else{
+            return js_CountPrice.ColorSurfacePromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.paper,this.paperWeight).then(value=>{
+              this.boxPrice.topPage=value.toFixed(2);
+            })
+          }
         }
-        return js_CountPrice.CardboardPromise(this.topCardboardLong+this.changeNumber,this.topCardboardWide+this.changeNumber,this.cardboard,this.thick,true).then(value=>{
-          this.boxPrice.topCardboard=value.toFixed(2);
+      }).then(()=>{//底包纸
+        if(this.isBottomPaper){
+          if(this.bottomPaper=='自设纸'){
+            this.boxPrice.bottomPage=js_CountPrice.ColorSurface(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.bottomPaper,this.bottomPaperWeight,this.bottomPagePrice).toFixed(2);
+          }else{
+            return js_CountPrice.ColorSurfacePromise(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.bottomPaper,this.bottomPaperWeight).then(value=>{
+              this.boxPrice.bottomPage=value.toFixed(2);
+            })
+          }
+        }
+      }).then(()=>{//围框包纸
+        if(this.isInclosePaper){
+          if(this.inclosePaper=='自设纸'){
+            this.boxPrice.inClosePage=(js_CountPrice.ColorSurface(this.incloseColorSurfaceLong,this.incloseColorSurfaceWide,this.inclosePaper,this.inclosePaperWeight,this.inclosePagePrice)*2).toFixed(2);
+          }else{
+            return js_CountPrice.ColorSurfacePromise(this.incloseColorSurfaceLong,this.incloseColorSurfaceWide,this.inclosePaper,this.inclosePaperWeight).then(value=>{
+              this.boxPrice.inClosePage=(value*2).toFixed(2);
+            })
+          }
+        }
+      }).then(()=>{//盖印刷费
+        if(this.print!='4' && this.isPaper=='含包纸'){
+          return js_CountPrice.PrintPromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity,this.print).then(value=>{
+            this.boxPrice.print=value.toFixed(2);
+          })
+        }
+      }).then(()=>{//底印刷费
+        if(this.bottomPrint!='4' && this.isBottomPaper){
+          return js_CountPrice.PrintPromise(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.quantity,this.bottomPrint).then(value=>{
+            this.boxPrice.bottomPrint=value.toFixed(2);
+          })
+        }
+      }).then(()=>{//卡合
+        cuttQuantity+=3;
+        return js_CountPrice.KaHePromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity).then(value=>{
+          this.boxPrice.made=(value*cuttQuantity).toFixed(2);
         })
+      }).then(()=>{//盖-覆膜
+        if(this.film){
+          return js_CountPrice.FilmPromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity).then(value=>{
+            this.boxPrice.film=value.toFixed(2);
+          })
+        }
+      }).then(()=>{//底-覆膜
+        if(this.bottomFilm){
+          return js_CountPrice.FilmPromise(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.quantity).then(value=>{
+            this.boxPrice.bottomFilm=value.toFixed(2);
+          })
+        }
+      }).then(()=>{//围框-覆膜
+        if(this.inCloseFilm){
+          return js_CountPrice.film(this.incloseColorSurfaceLong*2,this.incloseColorSurfaceWide*2,this.quantity).then(value=>{
+            this.boxPrice.inCloseFilm=value.toFixed(2);
+          })
+        }
+      }).then(()=>{//烫金
+        if(this.ispermed){
+          return js_CountPrice.PermedPromise(this.permed,this.quantity).then(value=>{
+            this.boxPrice.permed=value.toFixed(2);
+          })
+        }
+      }).then(()=>{
+        //纸箱
+        if(this.isCarton){
+          this.boxPrice.carton=js_CountPrice.Carton(this.long,this.wide,this.height).toFixed(2);
+        }
+        for (var i in this.boxPrice){
+          this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
+        }
+        this.boxPrice.count=this.boxPrice.count.toFixed(2);
+        this.dialogPriceVisible=true;
+        this.loading=false;
       })
-      if(this.isCardboard=='含纸板'){//判断是否含纸板
-        this.boxPrice.topCardboard=js_CountPrice.Cardboard(this.topCardboardLong+this.changeNumber,this.topCardboardWide+this.changeNumber,this.cardboard,this.thick,true).toFixed(2);
-        this.boxPrice.bottomCardboard=js_CountPrice.Cardboard(this.bottomCardboardLong+this.changeNumber,this.bottomCardboardWide+this.changeNumber,this.cardboard,this.thick,true).toFixed(2);
-        //1.3围框纸板目前统一按两部分计算开别
-        this.boxPrice.inclosePrice=js_CountPrice.Cardboard(this.incloseCardboardLong,this.incloseCardboardWide,this.IncloseCardboard,this.IncloseThick,true).toFixed(2);
-
-      }
-      //底-包纸
-      if(this.isBottomPaper){
-        if(this.bottomPaper=='自设纸'){
-          this.boxPrice.bottomPage=js_CountPrice.ColorSurface(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.bottomPaper,this.bottomPaperWeight,this.bottomPagePrice).toFixed(2);
-        }else{
-          this.boxPrice.bottomPage=js_CountPrice.ColorSurface(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.bottomPaper,this.bottomPaperWeight).toFixed(2);
-        }
-      }
-      //围框
-      if(this.isInclosePaper){
-        if(this.inclosePaper=='自设纸'){
-          this.boxPrice.inClosePage=(js_CountPrice.ColorSurface(this.incloseColorSurfaceLong,this.incloseColorSurfaceWide,this.inclosePaper,this.inclosePaperWeight,this.inclosePagePrice)*2).toFixed(2);
-        }else{
-          this.boxPrice.inClosePage=(js_CountPrice.ColorSurface(this.incloseColorSurfaceLong,this.incloseColorSurfaceWide,this.inclosePaper,this.inclosePaperWeight)*2).toFixed(2);
-        }
-      }
-      //盖-包纸
-      if(this.isPaper=='含包纸'){
-        if(this.paper=='自设纸'){
-          this.boxPrice.topPage=js_CountPrice.ColorSurface(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.paper,this.paperWeight,this.pagePrice).toFixed(2);
-        }else{
-          this.boxPrice.topPage=js_CountPrice.ColorSurface(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.paper,this.paperWeight).toFixed(2);
-        }
-      }
-      cuttQuantity+=3;
-      //计算其他价格
-      var boxJson=require("../json/BoxPrice.json");
-      var boxName='天地盖3'
-      //印刷费用
-      if(this.print!='4' && this.isPaper=='含包纸'){
-        this.boxPrice.print=js_CountPrice.Print(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity,this.print);
-      }
-      if(this.bottomPrint!='4' && this.isBottomPaper){
-        this.boxPrice.bottomPrint=js_CountPrice.Print(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.quantity,this.bottomPrint);
-      }
-      //卡合
-      this.boxPrice.made=(js_CountPrice.KaHe(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity)*cuttQuantity).toFixed(2);
-      //加工费
-      //this.boxPrice.process=js_CountPrice.Process('天地盖3',this.quantity);
-      //覆膜
-      if(this.film){
-        this.boxPrice.film=js_CountPrice.film(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity).toFixed(2);
-      }
-      //底-覆膜
-      if(this.bottomFilm){
-        this.boxPrice.bottomFilm=js_CountPrice.film(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.quantity).toFixed(2);
-      }
-      //围条-覆膜
-      if(this.inCloseFilm){
-        this.boxPrice.inCloseFilm=js_CountPrice.film(this.incloseColorSurfaceLong*2,this.incloseColorSurfaceWide*2,this.quantity).toFixed(2);
-      }
-      //烫金
-      if(this.ispermed){
-        this.boxPrice.permed=js_CountPrice.Permed(this.permed,this.quantity);
-      }
-      //纸箱
-      if(this.isCarton){
-        this.boxPrice.carton=js_CountPrice.Carton(this.long,this.wide,this.height).toFixed(2);
-      }
-      for (var i in this.boxPrice){
-        this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
-      }
-      this.boxPrice.count=this.boxPrice.count.toFixed(2);
-      this.dialogPriceVisible=true;
     }
   }
 }
