@@ -57,6 +57,17 @@ module.exports.ProcessPromise=function(name,quantity){
     reject('errrrr');
   })
 }
+//瓦楞
+module.exports.Corrugated=function(long,wide,name) {
+  return new Promise((resolve,reject)=>{
+    ref.child(' 瓦楞').once('value').then(snapshot=>{
+      let boxJson=snapshot.val();
+      let Square=long/1000*wide/1000;
+      resolve(Square*boxJson[name].price);
+      //resolve(Square*boxJson[name].addPrice*quantity > boxJson[name].price ? Square*boxJson[name].addPrice : boxJson[name].price/quantity);
+    })
+  })
+}
 module.exports.CardboardPromise=function(long,wide,CardboardName,thick,cutt) {
   //厚度转换
   let mthick;
@@ -157,7 +168,9 @@ module.exports.ColorSurfacePromise=function(long,wide,paper,paperWeight,price){
         let dPrice=(tonPrice/1884*paperWeight/500);
         resolve((dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB));
       })
-    });
+    }).catch(()=>{
+      
+    })
   }
 }
 //计算包纸
@@ -244,11 +257,31 @@ module.exports.Permed=function(type,quantity) {
   return (p/quantity)*type;
 }
 //提绳
+module.exports.RopePromise=function(type) {
+  return new Promise((resolve,reject)=>{
+    ref.child('提绳').once('value').then(snapshot=>{
+      let boxJson=snapshot.val();
+      resolve(boxJson[type].price);
+    })
+  })
+}
+//提绳
 module.exports.Rope=function(type) {
   let boxJson=require("../json/other.json");
   return boxJson['提绳'][type].price;
 }
-//UV油
+//UV
+module.exports.UVPromise=function(long,wide,quantity){
+  return new Promise((resolve,reject)=>{
+    ref.child('印后').once('value').then(snapshot=>{
+      let boxJson=snapshot.val();
+      let p=boxJson['UV'].price;
+      let Square=long/1000*wide/1000;
+      resolve(Square*boxJson['UV'].addPrice*quantity > boxJson['UV'].price ? Square*boxJson['UV'].addPrice<boxJson['UV'].singlePrice ? boxJson['UV'].singlePrice : Square*boxJson['UV'].addPrice : boxJson['UV'].price/quantity)
+    })
+  })
+}
+//UV
 module.exports.UV=function(long,wide,quantity){
   let boxJson=require("../json/Technology.json");
   let p=boxJson['UV'].price;

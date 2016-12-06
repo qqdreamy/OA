@@ -344,7 +344,13 @@ export default {
           }else{
             return js_CountPrice.ColorSurfacePromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.paper,this.paperWeight).then(value=>{
               this.boxPrice.topPage=value.toFixed(2);
-            })
+            }).then(()=>{
+              if(this.film){
+                return js_CountPrice.FilmPromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity).then(value=>{
+                  this.boxPrice.film=value.toFixed(2);
+                })
+              }
+            });
           }
         }
       }).then(()=>{//底包纸
@@ -354,6 +360,12 @@ export default {
           }else{
             return js_CountPrice.ColorSurfacePromise(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.bottomPaper,this.bottomPaperWeight).then(value=>{
               this.boxPrice.bottomPage=value.toFixed(2);
+            }).then(()=>{
+              if(this.bottomFilm){
+                return js_CountPrice.FilmPromise(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.quantity).then(value=>{
+                  this.boxPrice.bottomFilm=value.toFixed(2);
+                })
+              }
             })
           }
         }
@@ -376,17 +388,9 @@ export default {
           this.boxPrice.made=(value*cuttQuantity).toFixed(2);
         })
       }).then(()=>{
-        if(this.film){
-          return js_CountPrice.FilmPromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity).then(value=>{
-            this.boxPrice.film=value.toFixed(2);
-          })
-        }
+
       }).then(()=>{
-        if(this.bottomFilm){
-          return js_CountPrice.FilmPromise(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.quantity).then(value=>{
-            this.boxPrice.bottomFilm=value.toFixed(2);
-          })
-        }
+
       }).then(()=>{//烫金
         if(this.ispermed){
           return js_CountPrice.PermedPromise(this.permed,this.quantity).then(value=>{

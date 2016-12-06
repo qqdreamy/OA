@@ -328,19 +328,27 @@ export default {
             })
           })
           if(this.technique=='1'){
-            this.boxPrice.Vcut=0.3;//计算V槽价格
+            this.boxPrice.Vcut=0.4;//计算V槽价格
           }else {
             cuttQuantity+=2;
           }
         }
       }).then(()=>{//计算盖包纸
+        console.log(this.film);
         if(this.isPaper=='含包纸'){
           if(this.paper=='自设纸'){
             this.boxPrice.topPage=js_CountPrice.ColorSurface(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.paper,this.paperWeight,this.pagePrice).toFixed(2);
           }else{
             return js_CountPrice.ColorSurfacePromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.paper,this.paperWeight).then(value=>{
               this.boxPrice.topPage=value.toFixed(2);
-            })
+            }).then(()=>{//覆膜
+              if(this.film){
+                return js_CountPrice.FilmPromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity).then(value=>{
+                  console.info('ddd'+value);
+                  this.boxPrice.film=value.toFixed(2);
+                });
+              }
+            });
           }
         }
       }).then(()=>{//计算底包纸
@@ -350,6 +358,12 @@ export default {
           }else {
             return js_CountPrice.ColorSurfacePromise(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.bottomPaper,this.bottomPaperWeight).then(value=>{
               this.boxPrice.bottomPage=value.toFixed(2);
+            }).then(()=>{
+              if(this.bottomFilm){
+                return js_CountPrice.FilmPromise(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.quantity).then(value=>{
+                  this.boxPrice.bottomFilm=value.toFixed(2);
+                })
+              }
             })
           }
         }
@@ -370,16 +384,6 @@ export default {
         cuttQuantity+=2;
         return js_CountPrice.KaHePromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity).then(value=>{
           this.boxPrice.made=(value*cuttQuantity).toFixed(2);
-        })
-      }).then(()=>{//覆膜
-        return js_CountPrice.FilmPromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity).then(value=>{
-          this.boxPrice.film=value.toFixed(2);
-        }).then(()=>{
-          if(this.bottomFilm){
-            return js_CountPrice.FilmPromise(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.quantity).then(value=>{
-              this.boxPrice.bottomFilm=value.toFixed(2);
-            })
-          }
         })
       }).then(()=>{//烫金
         if(this.ispermed){

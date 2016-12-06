@@ -419,10 +419,13 @@ export default {
           }else{
             return js_CountPrice.ColorSurfacePromise(this.hullColorSurfaceLong,this.hullColorSurfaceWide,this.paper,this.paperWeight).then(value=>{
               this.boxPrice.hullPage=value.toFixed(2);
-            });
-          }
-          if (this.isHullFilm){//覆膜
-            this.boxPrice.hullFilm=js_CountPrice.film(this.hullColorSurfaceLong,this.hullColorSurfaceWide,this.quantity).toFixed(2);
+            }).then(()=>{
+              if (this.isHullFilm){//覆膜
+                return js_CountPrice.FilmPromise(this.hullColorSurfaceLong,this.hullColorSurfaceWide,this.quantity).then(value=>{
+                  this.boxPrice.hullFilm=value.toFixed(2);
+                })
+              }
+            })
           }
         }
       }).then(()=>{//内盒包纸
@@ -432,13 +435,13 @@ export default {
           }else{
             return js_CountPrice.ColorSurfacePromise(this.boxOuterColorSurfaceLong,this.boxOuterColorSurfaceWide,this.outerPaper,this.outerPaperWeight).then(value=>{
               this.boxPrice.boxOuterPage=value.toFixed(2);
+            }).then(()=>{//内盒覆膜
+              if(this.isOuterFilm){
+                return js_CountPrice.FilmPromise(this.boxOuterColorSurfaceLong,this.boxOuterColorSurfaceWide,this.quantity).then(value=>{
+                  this.boxPrice.outerFilm=value.toFixed(2);
+                });
+              }
             })
-          }
-          //内盒覆膜
-          if(this.isOuterFilm){
-            return js_CountPrice.FilmPromise(this.boxOuterColorSurfaceLong,this.boxOuterColorSurfaceWide,this.quantity).then(value=>{
-              this.boxPrice.outerFilm=value.toFixed(2);
-            });
           }
         }
       }).then(()=>{//印刷费
@@ -465,14 +468,14 @@ export default {
           if(this.StickerPaper=='自设纸'){
             this.boxPrice.sticker=js_CountPrice.ColorSurface(this.stickerLong,this.stickerWide,this.StickerPaper,this.StickerPaperWeight,this.StickerPagePrice).toFixed(2);
           }else{
-            js_CountPrice.ColorSurfacePromise(this.stickerLong,this.stickerWide,this.StickerPaper,this.StickerPaperWeight).then(value=>{
+            return js_CountPrice.ColorSurfacePromise(this.stickerLong,this.stickerWide,this.StickerPaper,this.StickerPaperWeight).then(value=>{
               this.boxPrice.sticker=value.toFixed(2);
-            });
-          }
-          //覆膜
-          if(this.isStickerFilm){
-            return js_CountPrice.FilmPromise(this.stickerLong,this.stickerWide,this.quantity).then(value=>{
-              this.boxPrice.stickerFilm=value.toFixed(2);
+            }).then(()=>{//覆膜
+              if(this.isStickerFilm){
+                return js_CountPrice.FilmPromise(this.stickerLong,this.stickerWide,this.quantity).then(value=>{
+                  this.boxPrice.stickerFilm=value.toFixed(2);
+                })
+              }
             })
           }
         }

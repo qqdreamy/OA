@@ -409,6 +409,12 @@ export default {
           }else{
             return js_CountPrice.ColorSurfacePromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.paper,this.paperWeight).then(value=>{
               this.boxPrice.topPage=value.toFixed(2);
+            }).then(()=>{
+              if(this.film){//盖-覆膜
+                return js_CountPrice.FilmPromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity).then(value=>{
+                  this.boxPrice.film=value.toFixed(2);
+                })
+              }
             })
           }
         }
@@ -419,6 +425,12 @@ export default {
           }else{
             return js_CountPrice.ColorSurfacePromise(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.bottomPaper,this.bottomPaperWeight).then(value=>{
               this.boxPrice.bottomPage=value.toFixed(2);
+            }).then(()=>{//底-覆膜
+              if(this.bottomFilm){
+                return js_CountPrice.FilmPromise(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.quantity).then(value=>{
+                  this.boxPrice.bottomFilm=value.toFixed(2);
+                })
+              }
             })
           }
         }
@@ -429,6 +441,12 @@ export default {
           }else{
             return js_CountPrice.ColorSurfacePromise(this.incloseColorSurfaceLong,this.incloseColorSurfaceWide,this.inclosePaper,this.inclosePaperWeight).then(value=>{
               this.boxPrice.inClosePage=(value*2).toFixed(2);
+            }).then(()=>{//围框-覆膜
+              if(this.inCloseFilm){
+                return js_CountPrice.FilmPromise(this.incloseColorSurfaceLong*2,this.incloseColorSurfaceWide*2,this.quantity).then(value=>{
+                  this.boxPrice.inCloseFilm=value.toFixed(2);
+                })
+              }
             })
           }
         }
@@ -449,24 +467,6 @@ export default {
         return js_CountPrice.KaHePromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity).then(value=>{
           this.boxPrice.made=(value*cuttQuantity).toFixed(2);
         })
-      }).then(()=>{//盖-覆膜
-        if(this.film){
-          return js_CountPrice.FilmPromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity).then(value=>{
-            this.boxPrice.film=value.toFixed(2);
-          })
-        }
-      }).then(()=>{//底-覆膜
-        if(this.bottomFilm){
-          return js_CountPrice.FilmPromise(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.quantity).then(value=>{
-            this.boxPrice.bottomFilm=value.toFixed(2);
-          })
-        }
-      }).then(()=>{//围框-覆膜
-        if(this.inCloseFilm){
-          return js_CountPrice.film(this.incloseColorSurfaceLong*2,this.incloseColorSurfaceWide*2,this.quantity).then(value=>{
-            this.boxPrice.inCloseFilm=value.toFixed(2);
-          })
-        }
       }).then(()=>{//烫金
         if(this.ispermed){
           return js_CountPrice.PermedPromise(this.permed,this.quantity).then(value=>{

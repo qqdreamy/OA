@@ -93,7 +93,7 @@
         </el-col>
       </template>
       <el-col :span="2">
-        <el-checkbox class="checkbox" v-model="isUV">UV油</el-checkbox>
+        <el-checkbox class="checkbox" v-model="isUV">UV</el-checkbox>
       </el-col>
       <template v-if="isUV">
         <el-col :span="3" >
@@ -191,50 +191,64 @@ export default {
     CountPrice:function(){
       let BagLong=this.BagLong;
       let quantity=this.bagType==2?this.quantity*2 : this.quantity;
-      let Process=this.bagType==2? 0.1 : 0;
       const profit=0.3//30%利润计算常量
-      console.log(quantity);
-      //纸张
-      if(this.bagType==2){
-        this.boxPrice.paper=(js_CountPrice.ColorSurface(this.BagLong,this.BagWide,this.paper,this.paperWeight)*2).toFixed(2);
-      }else{
-        this.boxPrice.paper=js_CountPrice.ColorSurface(this.BagLong,this.BagWide,this.paper,this.paperWeight).toFixed(2);
-      }
-      //印刷
-      if(this.print!='4'){
-        this.boxPrice.print=js_CountPrice.Print(this.BagLong,this.BagWide,quantity,this.print);
-      }
-      //覆膜
-      if(this.isfilm){
-        this.boxPrice.film=js_CountPrice.film(this.BagLong,this.BagWide,quantity).toFixed(2);
-      }
-      //卡合
-      let kahe=js_CountPrice.KaHe(this.BagLong,this.BagWide,quantity);
-      //烫金
-      if(this.ispermed){
-        this.boxPrice.permed=js_CountPrice.Permed(this.permed,quantity);
-      }
-      //UV
-      if(this.isUV){
-        if(this.uvLong==0 || this.uvWide==0){
-          this.$notify.error({
-            title: '填写错误',
-            message: '请填写UV尺寸！'
-          });
-          return;
+      js_CountPrice.ColorSurfacePromise(this.BagLong,this.BagWide,this.paper,this.paperWeight).then(value=>{
+        if(this.bagType==2){
+          this.boxPrice.paper=(value*2).toFixed(2);
+        }else{
+          this.boxPrice.paper=value.toFixed(2);
         }
-        this.boxPrice.UV=js_CountPrice.UV(this.uvLong,this.uvLong,quantity);
-      }
-      //加工费
-      this.boxPrice.process=(js_CountPrice.Process('手提袋',this.quantity)+kahe+Process).toFixed(2);
-      //提绳
-      this.boxPrice.rope=js_CountPrice.Rope(this.rope);
-      //自动计算总价
-      for (var i in this.boxPrice){
-        this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
-      }
-      this.boxPrice.count=(this.boxPrice.count*profit+this.boxPrice.count).toFixed(2);
-      this.dialogPriceVisible=true;
+      }).then(()=>{//卡合+加工费
+        return js_CountPrice.KaHePromise(this.BagLong,this.BagWide,quantity).then(value=>{
+          return value;
+        }).then(kahe=>{
+          return js_CountPrice.ProcessPromise(`手提袋${this.bagType}`,this.quantity).then(value=>{
+            this.boxPrice.process=(value+kahe).toFixed(2);
+          }) 
+        })
+      }).then(()=>{//印刷
+        if(this.print!='4'){
+          return js_CountPrice.PrintPromise(this.BagLong,this.BagWide,quantity,this.print).then(value=>{
+            this.boxPrice.print=value.toFixed(2);
+          })
+        }
+      }).then(()=>{//覆膜
+        if(this.isfilm){
+          return js_CountPrice.FilmPromise(this.BagLong,this.BagWide,quantity).then(value=>{
+            this.boxPrice.film=value.toFixed(2);
+          })
+        }
+      }).then(()=>{//烫金
+        if(this.ispermed){
+          return js_CountPrice.PermedPromise(this.permed,quantity).then(value=>{
+            this.boxPrice.permed=value.toFixed(2);
+          })
+        }
+      }).then(()=>{//UV
+        if(this.isUV){
+          if(this.uvLong==0 || this.uvWide==0){
+            this.$notify.error({
+              title: '填写错误',
+              message: '请填写UV尺寸！'
+            });
+            throw 0
+          }
+          return js_CountPrice.UVPromise(this.uvLong,this.uvLong,quantity).then(value=>{
+            this.boxPrice.UV=value.toFixed(2);
+          })
+        }
+      }).then(()=>{
+        return js_CountPrice.RopePromise(this.rope).then(value=>{
+          this.boxPrice.rope=value.toFixed(2);
+        })
+      }).then(()=>{
+        //自动计算总价
+        for (var i in this.boxPrice){
+          this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
+        }
+        this.boxPrice.count=(this.boxPrice.count*profit+this.boxPrice.count).toFixed(2);
+        this.dialogPriceVisible=true;
+      }).catch(value=>console.log(value))
     }
   }
 }

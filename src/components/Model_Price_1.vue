@@ -3,7 +3,7 @@
   <el-form label-width="80px">
     <el-form-item label="材料">
       <el-col :span="4">
-        <el-select placeholder="请选择材料" v-model.number="material">
+        <el-select placeholder="请选择材料" v-model="material">
           <el-option label="1.5mm纸板" value="1"></el-option>
           <el-option label="瓦楞" value="2"></el-option>
         </el-select>
@@ -64,7 +64,7 @@
     </el-form-item>
   </el-form>
   <el-dialog title="报价" @close="closePrice" v-model="dialogPriceVisible" :close-on-click-modal="false" :close-on-press-escape="false">
-    纸板：{{this.boxPrice.Cardboard}}
+    基材：{{this.boxPrice.Cardboard}}
     绸布：{{this.boxPrice.drapery}}</br>
     加工费：{{this.boxPrice.process}}</br>
     合计：{{this.boxPrice.count}}
@@ -75,12 +75,6 @@
 <script>
 import SizeCount from '../lib/SizeCount.js'
 import selectData from '../data/selectData.vue'
-var mythick={
-  '2':1150,
-  '1.5':850,
-  '2.5':1450,
-  '3':1750
-}
 export default {
   data () {
     return {
@@ -131,25 +125,22 @@ export default {
       var data = require("../json/CardboardPrice.json");
       var jdata=require("../json/CopperplatePaper.json");
       var TopCardboardPrice;
-      const mthick=850;//设置纸板内托默认纸板厚度
-      const corrugationPrice=2;//设置瓦楞默认价格
-      if(this.material==1){
-        //1.1纸板
-        var Zhullbig=SizeCount.KbCountBig(1,this.CardboardLong,this.CardboardWide).count;
-        var Zhullsmall=SizeCount.KbCountBig(0,this.CardboardLong,this.CardboardWide).count;
-        //获取纸板单张价格
-        var tonPrice=data['双灰板']['吨价'];
-        var zPrice=(tonPrice/2327*mthick/500).toFixed(2)//计算单张价格
-        var dPrice=(tonPrice/1884*mthick/500).toFixed(2)
-        if(dPrice/Zhullbig>zPrice/Zhullsmall){
-          TopCardboardPrice=zPrice/Zhullsmall
+      const CorrugatedName='三层瓦楞';//设置瓦楞
+      const cardboard='双灰板';//默认使用双灰板
+      const thick=1.5;//默认使用1.5mm
+      js_CountPrice.ProcessPromise('内托',this.quantity).then(value=>{
+        this.boxPrice.process=value.toFixed(2);
+      }).then(()=>{
+        if(this.material==1){
+          return js_CountPrice.CardboardPromise(this.CardboardLong,this.CardboardWide,cardboard,thick,true).then(value=>{
+            this.boxPrice.Cardboard=value.toFixed(2);
+          })
         }else{
-          TopCardboardPrice=dPrice/Zhullbig
+          return js_CountPrice.Corrugated(this.CardboardLong,this.CardboardWide,CorrugatedName).then(value=>{
+            this.boxPrice.Cardboard=value.toFixed(2);
+          })
         }
-        this.boxPrice.Cardboard=TopCardboardPrice.toFixed(2);
-      }else{
-        this.boxPrice.Cardboard=this.CardboardLong/1000*this.CardboardWide/1000*corrugationPrice;
-      }
+      })
       //1.2绸布
       if(this.isdrapery){
         const draperyPrice=this.draperyType==1 ? jdata['绸布']['高档绸布'] : jdata['绸布']['普通绸布'];
