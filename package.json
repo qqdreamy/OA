@@ -1,6 +1,6 @@
 {
   "name": "oa",
-  "version": "1.0.0",
+  "version": "0.0.3",
   "description": "A Vue.js project",
   "author": "qqdreamy <liubowen@qq.com>",
   "private": true,
@@ -10,7 +10,7 @@
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
-    "element-ui": "^1.0.3",
+    "element-ui": "^1.0.5",
     "vue": "^2.0.0",
     "vue-loader": "^9.5.0",
     "wilddog": "^2.3.5"

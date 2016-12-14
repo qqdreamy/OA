@@ -1,5 +1,4 @@
 <template>
-
 <div class="hero-head">
   <nav class="nav has-shadow">
     <div class="nav-left">
