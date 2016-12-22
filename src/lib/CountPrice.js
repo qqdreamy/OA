@@ -148,10 +148,11 @@ module.exports.CheckCardboard=function(long,wide,tonPrice,thick,quantity,cutt){
   let zKB=SizeCount.KbCountBig(0,long,wide).count;
   var zPrice=(tonPrice/2327*mthick/500)+cuttPrice;//计算单张价格
   var dPrice=(tonPrice/1884*mthick/500)+cuttPrice;
+  console.log('zPrice'+zPrice);
+  console.log('dPrice'+dPrice)
   Price.z= Math.ceil(quantity/zKB)*zPrice;
   Price.d= Math.ceil(quantity/dKB)*dPrice;
   return Price;
-  //(dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB);
 }
 //计算包纸
 module.exports.ColorSurfacePromise=function(long,wide,paper,paperWeight,price){

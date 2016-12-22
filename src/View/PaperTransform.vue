@@ -10,7 +10,9 @@
       </el-form-item>
       <el-form-item >
         克重
-        <el-select v-model="tableData[0].weight">
+        <el-input placeholder="自定义克重"  v-model="tableData[0].weight">
+        </el-input>
+        <el-select placeholder="请选择克重" v-model="tableData[0].weight">
           <el-option-group v-for="group in Weights" :label="group.label">
             <el-option v-for="item in group.options" :label="item.label" :value="item.value">
             </el-option>
@@ -124,6 +126,9 @@ export default {
     price:function(){
       return (this.ream/500).toFixed(2);
     }
+  },
+  mounted() {
+    
   },
   methods:{
     Count:function(){
