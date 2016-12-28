@@ -37,7 +37,7 @@
   </el-form>
   <div slot="footer" class="dialog-footer">
     <el-button @click="dialogFormVisible = false">取 消</el-button>
-    <el-button type="primary" @click="Login">确 定</el-button>
+    <el-button type="primary" @click="Login" v-loading.fullscreen.lock="fullscreenLoading">确 定</el-button>
   </div>
 </el-dialog>
 </div>
@@ -47,6 +47,7 @@
 export default {
   data () {
     return {
+      fullscreenLoading:false,
       dialogFormVisible:false,
       form: {
         email: 'liubowen@qq.com',
@@ -67,6 +68,7 @@ export default {
       //this.$router.push('/PriceSet')
     },
     Login:function(){
+      this.fullscreenLoading=true;
       var config = {
         authDomain: "decbzoa.wilddog.com",
         syncURL: "https://decbzoa.wilddogio.com"
@@ -74,9 +76,11 @@ export default {
       wilddog.auth().signInWithEmailAndPassword(this.form.email, this.form.password)
       .then(()=> {
         this.dialogFormVisible=false;
+        this.fullscreenLoading=false;
         this.$router.push('/PriceSet');
-      }).catch(function (err) {
-          console.log('login failed ->',err);
+      }).catch(err=> {
+        this.fullscreenLoading=false;
+        console.log('login failed ->',err);
       });
     }
   }
