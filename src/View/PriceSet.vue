@@ -3,9 +3,9 @@
   <el-tabs type="border-card" style="width: 100%" :active-name="activeName" @tab-click="TabsClick" v-loading.body="loading">
     <el-tab-pane label="纸板">
       <el-table :data="Cardboard" style="width: 100%">
-        <el-table-column  prop="name" label="名称" width="180">
+        <el-table-column  prop="_serverData.Name" label="名称" width="180">
         </el-table-column>
-        <el-table-column prop="price" label="吨价" width="180">
+        <el-table-column prop="_serverData.Price" label="吨价" width="180">
         </el-table-column>
         <el-table-column :context="_self" inline-template label="操作" >
           <el-button size="small" @click="handleEdit($index, row)">
@@ -19,9 +19,9 @@
     </el-tab-pane>
     <el-tab-pane label="纸张">
       <el-table :data="CopperplatePaper" style="width: 100%">
-        <el-table-column prop="name" label="名称" width="180">
+        <el-table-column prop="_serverData.name" label="名称" width="180">
         </el-table-column>
-        <el-table-column prop="price" label="价格" width="180">
+        <el-table-column prop="_serverData.price" label="价格" width="180">
         </el-table-column>
         <el-table-column :context="_self" inline-template label="操作">
           <el-button size="small" @click="CPEdit($index, row)">
@@ -32,9 +32,9 @@
     </el-tab-pane>
     <el-tab-pane label="提绳">
       <el-table :data="ropes" style="width: 100%">
-        <el-table-column prop="name" label="名称" width="180">
+        <el-table-column prop="_serverData.name" label="名称" width="180">
         </el-table-column>
-        <el-table-column prop="price" label="价格" width="180">
+        <el-table-column prop="_serverData.price" label="价格" width="180">
         </el-table-column>
         <el-table-column :context="_self" inline-template label="操作">
           <el-button size="small" @click="RopesEdit($index, row)">
@@ -45,11 +45,11 @@
     </el-tab-pane>
     <el-tab-pane label="印刷">
       <el-table :data="Print" style="width: 100%">
-        <el-table-column prop="name" label="名称" width="180">
+        <el-table-column prop="_serverData.name" label="名称" width="180">
         </el-table-column>
-        <el-table-column prop="price" label="起步价" width="180">
+        <el-table-column prop="_serverData.price" label="起步价" width="180">
         </el-table-column>
-        <el-table-column prop="addPrice" label="递增价格" width="180">
+        <el-table-column prop="_serverData.addPrice" label="递增价格" width="180">
         </el-table-column>
         <el-table-column :context="_self" inline-template label="操作">
           <el-button size="small" @click="PrintEdit($index, row)">
@@ -60,11 +60,11 @@
     </el-tab-pane>
     <el-tab-pane label="印后工艺">
       <el-table :data="finishPrint" style="width: 100%">
-        <el-table-column prop="name" label="名称" width="180">
+        <el-table-column prop="_serverData.name" label="名称" width="180">
         </el-table-column>
-        <el-table-column prop="price" label="起步价" width="180">
+        <el-table-column prop="_serverData.price" label="起步价" width="180">
         </el-table-column>
-        <el-table-column prop="addPrice" label="递增价格" width="180">
+        <el-table-column prop="_serverData.addPrice" label="递增价格" width="180">
         </el-table-column>
         <el-table-column :context="_self" inline-template label="操作">
           <el-button size="small" @click="FinishPrintEdit($index, row)">
@@ -75,22 +75,22 @@
     </el-tab-pane>
     <el-tab-pane label="加工费">
       <el-table :data="process" border style="width: 100%">
-        <el-table-column fixed prop="name" label="名称" width="180">
+        <el-table-column fixed prop="_serverData.name" label="名称" width="180">
         </el-table-column>
-        <el-table-column prop="起步价" label="起步价" width="180">
+        <el-table-column prop="_serverData.startPrice" label="起步价" width="180">
         </el-table-column>
         <el-table-column label="报价">
-          <el-table-column prop="500" label="500个" width="180">
+          <el-table-column prop="_serverData.500" label="500个" width="180">
           </el-table-column>
-          <el-table-column prop="1000" label="1000个" width="180">
+          <el-table-column prop="_serverData.1000" label="1000个" width="180">
           </el-table-column>
-          <el-table-column prop="2000" label="2000个" width="180">
+          <el-table-column prop="_serverData.2000" label="2000个" width="180">
           </el-table-column>
-          <el-table-column prop="5000" label="5000个" width="180">
+          <el-table-column prop="_serverData.5000" label="5000个" width="180">
           </el-table-column>
-          <el-table-column prop="10000" label="10000个" width="180">
+          <el-table-column prop="_serverData.10000" label="10000个" width="180">
           </el-table-column>
-          <el-table-column prop="20000" label="20000个" width="180">
+          <el-table-column prop="_serverData.20000" label="20000个" width="180">
           </el-table-column>
         </el-table-column>
         <el-table-column fixed="right" :context="_self" inline-template label="操作">
@@ -138,13 +138,14 @@
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button @click.native="dialogFormVisible = false">取 消</el-button>
-      <el-button type="primary" @click.native="UpdatePrice">确 定</el-button>
+      <el-button type="primary" @click.native="UpdatePrice()">确 定</el-button>
     </div>
   </el-dialog>
   </div>
 </template>
 
 <script>
+import AV from 'leancloud-storage'
 import wilddog from 'wilddog'
 import js_CountPrice from '../lib/CountPrice.js'
 export default {
@@ -152,6 +153,7 @@ export default {
     return {
       loading: true,
       activeName:'1',
+      avID:null,
       ref:{},
       dialogFormVisible:false,
       Cardboard:[],
@@ -174,51 +176,53 @@ export default {
     }
   },
   created: function () {
-    var config = {
-      authDomain: "decbzoa.wilddog.com",
-      syncURL: "https://decbzoa.wilddogio.com"
-    };
-    wilddog.initializeApp(config);
-    this.ref = wilddog.sync().ref();
-    this.ref.child('纸板').on('value', (snapshot)=>{
-      this.Cardboard=Object.keys(snapshot.val()).map(function(k){return snapshot.val()[k]});
+    //实例化储存对象
+    const appId = 'cjtOItWI6rsyCzjvJCh9iSMH-gzGzoHsz';
+    const appKey = '5uIGW67Gq2wbEnLaD7IlVUHu';
+    AV.init({ appId, appKey });
+    this.ClassFind('Cardboards').then(results=>{
       this.loading=false;
-    });
-    this.ref.child('纸张').on('value',(snapshot)=>{
-      this.CopperplatePaper=Object.keys(snapshot.val()).map(function(k){return snapshot.val()[k]});
-    });
-    this.ref.child('印刷').on('value',(snapshot)=>{
-      this.Print=Object.keys(snapshot.val()).map(function(k){return snapshot.val()[k]});
-    });
-    this.ref.child('印后').on('value',(snapshot)=>{
-      this.finishPrint=Object.keys(snapshot.val()).map(function(k){return snapshot.val()[k]});
-    });
-    this.ref.child('加工费').on('value',(snapshot)=>{
-      this.process=Object.keys(snapshot.val()).map(function(k){return snapshot.val()[k]});
-    });
-    this.ref.child('提绳').on('value',(snapshot)=>{
-      this.ropes=Object.keys(snapshot.val()).map(function(k){return snapshot.val()[k]});
-    });
+      this.Cardboard=results;
+    }).then(()=>{
+      this.ClassFind('CopperplatePapers').then(results=>{
+        this.CopperplatePaper=results;
+      })
+    }).then(()=>{
+      this.ClassFind('ropes').then(results=>{
+        this.ropes=results;
+      })
+    }).then(()=>{
+      this.ClassFind('Prints').then(results=>{
+        this.Print=results;
+      })
+    }).then(()=>{
+      this.ClassFind('FinishPrints').then(results=>{
+        this.finishPrint=results;
+      })
+    }).then(()=>{
+      this.ClassFind('Process').then(results=>{
+        this.process=results;
+      })
+    })
   },
   methods:{
+    ClassFind:function(className){
+      return new Promise((resolve,reject)=>{
+        let query=new AV.Query(className);
+        query.find().then(results=>{
+          resolve(results); 
+        }, function(error){
+          reject(error);
+        });
+      });
+    },
     UpdatePrice:function(){
       if(this.activeName=='1'){
-        var hopperRef = this.ref.child("纸板").child(this.form.name);
-        hopperRef.update({
-          "price": this.form.price
-        }).then(()=>{
-          this.$message({
-            message: '修改成功！',
-            type: 'success'
-          });
-        }).catch(function(err){
-          //error
-        });
+        this.Cardboard[this.avID].set('Price',this.form.price);
+        this.Cardboard[this.avID].save();
       }else if(this.activeName=='2'){
-        var hopperRef = this.ref.child("纸张").child(this.form.name);
-        hopperRef.update({
-          "price": this.form.price
-        });
+        this.CopperplatePaper[this.avID].set('price',this.form.price);
+        this.CopperplatePaper[this.avID].save();
       }else if(this.activeName=='3'){
         var hopperRef = this.ref.child("提绳").child(this.form.name);
         hopperRef.update({
@@ -261,13 +265,15 @@ export default {
       this.activeName=i.index;
     },
     CPEdit(index,row){
-      this.form.name=this.CopperplatePaper[index].name;
-      this.form.price=this.CopperplatePaper[index].price;
+      this.form.name=this.CopperplatePaper[index].get('name');
+      this.form.price=this.CopperplatePaper[index].get('price');
+      this.avID=index;
       this.dialogFormVisible=true;
     },
     handleEdit(index, row) {
-      this.form.name=this.Cardboard[index].name;
-      this.form.price=this.Cardboard[index].price;
+      this.form.name=this.Cardboard[index].get('Name');
+      this.form.price=this.Cardboard[index].get('Price');
+      this.avID=index;
       this.dialogFormVisible=true;
     },
     RopesEdit(index,row){
@@ -299,12 +305,7 @@ export default {
       this.dialogFormVisible=true;
     },
     CountPrice:function(){
-      /*js_CountPrice.CardboardPromise(100,100,'双灰板','2',true).then(function(value){
-        console.log(value);
-      }).catch(function(){
 
-      });*/
-      //console.log(this.activeName);
     }
   }
 }

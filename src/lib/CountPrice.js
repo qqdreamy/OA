@@ -1,5 +1,6 @@
 import SizeCount from '../lib/SizeCount.js'
 import wilddog from 'wilddog'
+import AV from 'leancloud-storage'
 const mythick={
   '2':1150,
   '1.5':850,
@@ -13,20 +14,24 @@ let config = {
 };
 wilddog.initializeApp(config);
 let ref = wilddog.sync().ref();
+//初始化 leancloud
+const appId = 'cjtOItWI6rsyCzjvJCh9iSMH-gzGzoHsz';
+const appKey = '5uIGW67Gq2wbEnLaD7IlVUHu';
+AV.init({ appId, appKey });
 //印刷费
 module.exports.PrintPromise=function(long,wide,quantity,pType){
   return new Promise((resolve,reject)=>{
-    ref.child('印刷').once('value').then(snapshot=>{
-      let boxJson=snapshot.val();
-      let printKB=long > 870 ? '全开' : long > 580 ? '对开' : '四开';
-      let pName= pType=='1'? '四色印刷' : pType=='3' ? '专色印刷' : '单色印刷';
-      let p=boxJson[pName+'-'+printKB].price;
-      console.log(p);
-      p=Number(p)+Number(quantity-1000 >0 ? boxJson[pName+'-'+printKB].addPrice*(quantity-1000) : 0);
-      //console.log(pType);
-      //console.log(p);
+    let query = new AV.Query('Prints');
+    query.select(['price','addPrice']);
+    let printKB=long > 870 ? '全开' : long > 580 ? '对开' : '四开';
+    let pName= pType=='1'? '四色印刷' : pType=='3' ? '专色印刷' : '单色印刷';
+    query.startsWith('name',pName+'-'+printKB);
+    query.first().then(results=>{
+      let p=results.get('price');
+      let addPrice=results.get('addPrice');
+      p=Number(p)+Number(quantity-1000 >0 ? addPrice*(quantity-1000) : 0);
       resolve(p/quantity);
-    });
+    })
   })
 }
 //印刷费
@@ -47,14 +52,14 @@ module.exports.Process=function(name,quantity){
 }
 module.exports.ProcessPromise=function(name,quantity){
   return new Promise(function(resolve,reject){
-    ref.child('加工费').once('value').then((snapshot)=>{
-      let boxJson=snapshot.val();
-      resolve(typeof(boxJson[name][quantity])=="undefined"?boxJson[name]['起步价']/quantity : boxJson[name][quantity]);
-    }).catch(()=>{
-      console.log('errerr');
+    let query = new AV.Query('Process');
+    query.select([quantity,'startPrice']);
+    query.startsWith('name', name);
+    query.first().then(results=>{
+      resolve(results.get(quantity)=="undefined"?results.get('startPrice'):results.get(quantity));
+    }).catch(error=>{
+      console.log(error);
     })
-  }).catch(()=>{
-    reject('errrrr');
   })
 }
 //瓦楞
@@ -86,17 +91,17 @@ module.exports.CardboardPromise=function(long,wide,CardboardName,thick,cutt) {
     cuttPrice=boxJson[thick][kbName];
   }
   return new Promise(function(resolve,reject){
-    ref.child('纸板').once('value').then(function(snapshot){
-      let boxJson=snapshot.val();
-      let dKB=SizeCount.KbCountBig(1,long,wide).count;
-      let zKB=SizeCount.KbCountBig(0,long,wide).count;
-      let tonPrice=boxJson[CardboardName].price;
-      var zPrice=(tonPrice/2327*mthick/500)+cuttPrice;//计算单张价格
-      var dPrice=(tonPrice/1884*mthick/500)+cuttPrice;
+    let query=new AV.Query('Cardboards');
+    query.select(['Name','Price']);
+    query.startsWith('Name',CardboardName);
+    let dKB=SizeCount.KbCountBig(1,long,wide).count;
+    let zKB=SizeCount.KbCountBig(0,long,wide).count;
+    query.first().then(results=>{
+      let tonPrice=results.get('Price');
+      let zPrice=(tonPrice/2327*mthick/500)+cuttPrice;//计算单张价格
+      let dPrice=(tonPrice/1884*mthick/500)+cuttPrice;
       resolve((dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB));
-    }).catch(function(err){
-      console.log(err);
-    });
+    })
   });
 }
 //计算纸板价格
@@ -162,9 +167,11 @@ module.exports.ColorSurfacePromise=function(long,wide,paper,paperWeight,price){
     return new Promise(function(resolve,reject){
       let dKB=SizeCount.KbCountBig(1,long,wide).count;
       let zKB=SizeCount.KbCountBig(0,long,wide).count;
-      ref.child('纸张').once('value').then(snapshot=>{
-        let boxJson=snapshot.val();
-        let tonPrice=boxJson[paper].price;
+      let query = new AV.Query('CopperplatePapers');
+      query.select(['price']);
+      query.startsWith('name',paper);
+      query.first().then(results=>{
+        let tonPrice=results.get('price');
         let zPrice=(tonPrice/2327*paperWeight/500);//计算单张价格
         let dPrice=(tonPrice/1884*paperWeight/500);
         resolve((dPrice/dKB>zPrice/zKB ? zPrice/zKB : dPrice/dKB));
@@ -193,10 +200,13 @@ module.exports.ColorSurface=function(long,wide,paper,paperWeight,price){//长、
 //卡合
 module.exports.KaHePromise=function(long,wide,quantity){
   return new Promise((resolve,reject)=>{
-    ref.child('印后').once('value').then(snapshot=>{
-      let boxJson=snapshot.val();
-      let p=boxJson['卡合'].price;
-      p=p+Number(quantity-1000 >0 ? boxJson['卡合'].addPrice*(quantity-1000) : 0);
+    let query = new AV.Query('FinishPrints');
+    query.select(['price','addPrice']);
+    query.startsWith('name','卡合');
+    query.first().then(results=>{
+      let p=results.get('price');
+      let addPrice=results.get('addPrice');
+      p=p+Number(quantity-1000 >0 ? addPrice*(quantity-1000) : 0);
       resolve(p/quantity);
     })
   })
@@ -211,11 +221,15 @@ module.exports.KaHe=function(long,wide,quantity){
 //覆膜
 module.exports.FilmPromise=function(long,wide,quantity){
   return new Promise((resolve,reject)=>{
-    ref.child('印后').once('value').then((snapshot)=>{
-      let boxJson=snapshot.val();
+    let query = new AV.Query('FinishPrints');
+    query.select(['price','addPrice']);
+    query.startsWith('name','覆膜');
+    query.first().then(results=>{
       let Square=long/1000*wide/1000;
-      resolve(Square*boxJson['覆膜'].addPrice*quantity > boxJson['覆膜'].price ? Square*boxJson['覆膜'].addPrice : boxJson['覆膜'].price/quantity);
-    })
+      let addPrice=results.get('addPrice');
+      let price=results.get('price');
+      resolve(Square*addPrice*quantity > price ? Square*addPrice : price/quantity);
+    });
   });
 }
 //覆膜
@@ -236,18 +250,21 @@ module.exports.Carton=function(long,wide,height) {
   const clong=530;
   const cwide=480;
   const cheight=330;
-  const p=5;
+  const p=7;
   return p/SizeCount.carton(clong,cwide,cheight,long,wide,height);
 }
 //烫金
 module.exports.PermedPromise=function(type,quantity) {
   return new Promise((resolve,reject)=>{
-    ref.child('印后').once('value').then(snapshot=>{
-      let boxJson=snapshot.val();
-      let p=boxJson['烫金'].price;
-      p=p+Number(quantity-1000 >0 ? boxJson['烫金'].addPrice*(quantity-1000) : 0);
+    let query = new AV.Query('FinishPrints');
+    query.select(['price','addPrice']);
+    query.startsWith('name','烫金');
+    query.first().then(results=>{
+      let p=results.get('price');
+      let addPrice=results.get('addPrice');
+      p=p+Number(quantity-1000 >0 ? addPrice*(quantity-1000) : 0);
       resolve(p/quantity*type);
-    });
+    })
   });
 }
 //烫金价格
@@ -260,10 +277,13 @@ module.exports.Permed=function(type,quantity) {
 //提绳
 module.exports.RopePromise=function(type) {
   return new Promise((resolve,reject)=>{
-    ref.child('提绳').once('value').then(snapshot=>{
-      let boxJson=snapshot.val();
-      resolve(boxJson[type].price);
-    })
+    let query = new AV.Query('ropes');
+    query.select(['price']);
+    //console.log(type);
+    query.startsWith('name',type);
+    query.first().then(results=>{
+      resolve(results.get('price'));
+    }) 
   })
 }
 //提绳

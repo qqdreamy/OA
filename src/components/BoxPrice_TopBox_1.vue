@@ -195,7 +195,6 @@
     底纸板：{{this.boxPrice.bottomCardboard}}</br>
     盖-印刷：{{this.boxPrice.print}}
     底-印刷：{{this.boxPrice.bottomPrint}}</br>
-    刀模：{{this.boxPrice.cutt}}
     卡合：{{this.boxPrice.made}}
     烫金：{{this.boxPrice.permed}}
     V槽：{{this.boxPrice.Vcut}}</br>
@@ -253,7 +252,6 @@ export default {
         print:0,
         bottomPrint:0,
         permed:0,
-        cutt:0,//刀模
         made:0,//卡合
         Vcut:0,
         film:0,
@@ -320,21 +318,22 @@ export default {
         this.boxPrice.process=value.toFixed(2);
       }).then(()=>{
         if(this.isCardboard=='含纸板'){
+          
           return js_CountPrice.CardboardPromise(this.topCardboardLong+this.changeNumber,this.topCardboardWide+this.changeNumber,this.cardboard,this.thick,true).then(value=>{
             this.boxPrice.topCardboard=value.toFixed(2);
           }).then(()=>{
             return js_CountPrice.CardboardPromise(this.bottomCardboardLong+this.changeNumber,this.bottomCardboardWide+this.changeNumber,this.BottomCardboard,this.BottomThick,true).then(value=>{
               this.boxPrice.bottomCardboard=value.toFixed(2);
             })
+          }).then(()=>{
+            if(this.technique=='1'){
+              this.boxPrice.Vcut=0.4;//计算V槽价格
+            }else {
+              cuttQuantity+=2;
+            }
           })
-          if(this.technique=='1'){
-            this.boxPrice.Vcut=0.4;//计算V槽价格
-          }else {
-            cuttQuantity+=2;
-          }
         }
       }).then(()=>{//计算盖包纸
-        console.log(this.film);
         if(this.isPaper=='含包纸'){
           if(this.paper=='自设纸'){
             this.boxPrice.topPage=js_CountPrice.ColorSurface(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.paper,this.paperWeight,this.pagePrice).toFixed(2);
@@ -392,6 +391,9 @@ export default {
           })
         }
       }).then(()=>{//计算总价
+        if(this.isCarton){ //纸箱
+          this.boxPrice.carton=js_CountPrice.Carton(this.long,this.wide,this.height).toFixed(2);
+        }
         for (var i in this.boxPrice){
           this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
         }

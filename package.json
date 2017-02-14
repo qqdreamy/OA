@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "element-ui": "^1.0.5",
+    "leancloud-storage": "^1.5.3",
     "vue": "^2.0.0",
     "vue-loader": "^9.5.0",
     "wilddog": "^2.3.5"

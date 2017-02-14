@@ -44,6 +44,7 @@
 </template>
 
 <script>
+import AV from 'leancloud-storage'
 export default {
   data () {
     return {
@@ -69,7 +70,31 @@ export default {
     },
     Login:function(){
       this.fullscreenLoading=true;
-      var config = {
+      //实例化储存对象
+      const appId = 'cjtOItWI6rsyCzjvJCh9iSMH-gzGzoHsz';
+      const appKey = '5uIGW67Gq2wbEnLaD7IlVUHu';
+      AV.init({ appId, appKey });
+      // 新建 AVUser 对象实例
+      /*var user = new AV.User();
+      // 设置用户名
+      user.setUsername('liubowen@qq.com');
+      // 设置密码
+      user.setPassword('226650');
+      // 设置邮箱
+      user.setEmail('liubowen@qq.com');
+      user.signUp().then(function (loginedUser) {
+          console.log(loginedUser);
+      }, function (error) {
+      });*/
+      //用户登录
+      AV.User.logIn(this.form.email, this.form.password).then(loginedUser=> {
+        this.dialogFormVisible=false;
+        this.fullscreenLoading=false;
+        this.$router.push('/PriceSet');
+      }, function (error) {
+        alert(JSON.stringify(error));
+      });
+     /* var config = {
         authDomain: "decbzoa.wilddog.com",
         syncURL: "https://decbzoa.wilddogio.com"
       };
@@ -81,7 +106,7 @@ export default {
       }).catch(err=> {
         this.fullscreenLoading=false;
         console.log('login failed ->',err);
-      });
+      });*/
     }
   }
 }
