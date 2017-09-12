@@ -10,11 +10,10 @@
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
+    "babel-runtime": "^6.26.0",
     "element-ui": "^1.0.5",
     "leancloud-storage": "^1.5.3",
-    "vue": "^2.0.0",
-    "vue-loader": "^9.5.0",
-    "wilddog": "^2.3.5"
+    "vue": "^2.4.2"
   },
   "devDependencies": {
     "autoprefixer": "^6.4.0",
@@ -43,8 +42,9 @@
     "ora": "^0.3.0",
     "shelljs": "^0.7.4",
     "url-loader": "^0.5.7",
-    "vue-loader": "^9.9.5",
     "vue-style-loader": "^1.0.0",
+    "vue-template-compiler": "^2.4.2",
+    "vueify": "^9.4.1",
     "webpack": "^1.13.2",
     "webpack-dev-middleware": "^1.8.3",
     "webpack-hot-middleware": "^2.12.2",

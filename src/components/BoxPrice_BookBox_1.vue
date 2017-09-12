@@ -244,20 +244,23 @@
       </el-col>
     </el-form-item>
   </el-form>
-  <el-dialog title="报价" @close="closePrice" v-model="dialogPriceVisible" :close-on-click-modal="false" :close-on-press-escape="false">
-    皮壳包纸：纸张：{{this.boxPrice.hullPage}} 印刷：{{this.boxPrice.hullPrint}}覆膜：{{this.boxPrice.hullFilm}}</br>
-    皮壳纸板：{{this.boxPrice.hullCardboard}} </br>
-    内盒包纸：{{this.boxPrice.boxOuterPage}} 印刷：{{this.boxPrice.outerPrint}} 覆膜：{{this.boxPrice.outerFilm}}</br>
-    内盒纸板：{{this.boxPrice.boxOuterCardboard}}</br>
-    内贴纸张：{{this.boxPrice.sticker}}
-    印刷：{{this.boxPrice.stickerPrint}}
-    覆膜：{{this.boxPrice.stickerFilm}}</br>
-    卡合：{{this.boxPrice.made}}
-    V槽：{{this.boxPrice.Vcut}}</br>
-    纸箱：{{this.boxPrice.carton}}
-    烫金：{{this.boxPrice.permed}}
-    加工费：{{this.boxPrice.process}}</br>
-    合计：{{this.boxPrice.count}}
+    <el-dialog title="报价" @close="closePrice" v-model="dialogPriceVisible" :close-on-click-modal="false" :close-on-press-escape="false">
+    <el-switch v-model="isShowPrice" on-text="" off-text=""></el-switch>
+      <template v-if="isShowPrice">
+      皮壳包纸：纸张：{{this.boxPrice.hullPage}} 印刷：{{this.boxPrice.hullPrint}}覆膜：{{this.boxPrice.hullFilm}}</br>
+      皮壳纸板：{{this.boxPrice.hullCardboard}} </br>
+      内盒包纸：{{this.boxPrice.boxOuterPage}} 印刷：{{this.boxPrice.outerPrint}} 覆膜：{{this.boxPrice.outerFilm}}</br>
+      内盒纸板：{{this.boxPrice.boxOuterCardboard}}</br>
+      内贴纸张：{{this.boxPrice.sticker}}
+      印刷：{{this.boxPrice.stickerPrint}}
+      覆膜：{{this.boxPrice.stickerFilm}}</br>
+      卡合：{{this.boxPrice.made}}
+      V槽：{{this.boxPrice.Vcut}}</br>
+      纸箱：{{this.boxPrice.carton}}
+      烫金：{{this.boxPrice.permed}}
+      加工费：{{this.boxPrice.process}}</br>
+      </template>
+      报价：{{this.boxPrice.count}}
   </el-dialog>
 </div>
 </template>
@@ -268,6 +271,7 @@ import selectData from '../data/selectData.vue'
 export default {
   data () {
     return {
+      isShowPrice:false,
       long:100,
       wide:100,
       height:100,
@@ -481,7 +485,7 @@ export default {
         }
       }).then(()=>{//烫金
         if(this.ispermed){
-          return js_CountPrice.Permed(this.permed,this.quantity).then(value=>{
+          return js_CountPrice.PermedPromise(this.permed,this.quantity).then(value=>{
             this.boxPrice.permed=value.toFixed(2);
           })
         }
@@ -492,7 +496,7 @@ export default {
       for (var i in this.boxPrice){//合计价格计算
         this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
       }
-      this.boxPrice.count=this.boxPrice.count.toFixed(2);
+      this.boxPrice.count=(this.boxPrice.count*1.2).toFixed(2);
       this.dialogPriceVisible=true;
       this.loading=false;
       })

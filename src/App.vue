@@ -29,7 +29,6 @@
 			<el-tabs type="card" :closable="true">
 			</el-tabs>
 			<router-view></router-view>
-			</div>
 		</el-col>
 	</el-row>
    <!-- 

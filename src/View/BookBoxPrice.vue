@@ -6,8 +6,6 @@
 </template>
 <script>
 import BookBoxMenu from '../components/BookBoxMenu.vue'
-
-
 var mythick={
   '2':1150,
   '1.5':850,

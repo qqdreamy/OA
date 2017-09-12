@@ -1,0 +1,27 @@
+<template>
+  <el-dialog title="报价" @close="closePrice" v-model="dialogPriceVisible" :close-on-click-modal="false" :close-on-press-escape="false">
+  <el-switch v-model="isShowPrice" on-text="" off-text=""></el-switch>
+  <slot></slot>
+  </el-dialog>
+</template>
+
+<script>
+export default {
+  data () {
+    return {
+      isShowPrice:false
+      //dialogPriceVisible:false,
+    }
+  },
+  components: {
+
+  },
+  props: ['dialogPriceVisible'],
+  methods:{
+    closePrice:function(){//清空价格数据
+       this.$emit('closePrice');
+       console.log('closePrice');
+    }
+  }
+}
+</script>

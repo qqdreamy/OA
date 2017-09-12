@@ -75,6 +75,7 @@
 <script>
 import SizeCount from '../lib/SizeCount.js'
 import selectData from '../data/selectData.vue'
+import js_CountPrice from '../lib/CountPrice.js'
 export default {
   data () {
     return {

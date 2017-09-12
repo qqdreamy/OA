@@ -397,7 +397,7 @@ export default {
         for (var i in this.boxPrice){
           this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
         }
-        this.boxPrice.count=this.boxPrice.count.toFixed(2);
+        this.boxPrice.count=(this.boxPrice.count*1.2).toFixed(2);
         this.dialogPriceVisible=true;
         this.loading=false;
       }).catch(()=>{

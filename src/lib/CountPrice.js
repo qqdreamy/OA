@@ -18,18 +18,31 @@ let ref = wilddog.sync().ref();
 const appId = 'cjtOItWI6rsyCzjvJCh9iSMH-gzGzoHsz';
 const appKey = '5uIGW67Gq2wbEnLaD7IlVUHu';
 AV.init({ appId, appKey });
+//拼板算法
+module.exports.MakeUp=function(long,wide,quantity){
+  let printQuantity=quantity;
+  if(Math.floor(590 / (long+6))>=Math.floor(440 / (wide+6))){//4K尺寸可拼多个进行拼板算法
+    printQuantity=quantity/Math.floor(440 / (wide+6));
+  }else if(long<590){
+    printQuantity=quantity/Math.floor(590 / (long+6));
+  }
+  return printQuantity;
+}
 //印刷费
+//2017-02-17加入拼板算法
 module.exports.PrintPromise=function(long,wide,quantity,pType){
   return new Promise((resolve,reject)=>{
     let query = new AV.Query('Prints');
     query.select(['price','addPrice']);
+    let printQuantity=this.MakeUp(long,wide,quantity);
     let printKB=long > 870 ? '全开' : long > 580 ? '对开' : '四开';
     let pName= pType=='1'? '四色印刷' : pType=='3' ? '专色印刷' : '单色印刷';
     query.startsWith('name',pName+'-'+printKB);
     query.first().then(results=>{
       let p=results.get('price');
       let addPrice=results.get('addPrice');
-      p=Number(p)+Number(quantity-1000 >0 ? addPrice*(quantity-1000) : 0);
+      p=Number(p)+Number(printQuantity-1000 >0 ? addPrice*(printQuantity-1000) : 0);
+      console.log(p);
       resolve(p/quantity);
     })
   })
@@ -203,10 +216,12 @@ module.exports.KaHePromise=function(long,wide,quantity){
     let query = new AV.Query('FinishPrints');
     query.select(['price','addPrice']);
     query.startsWith('name','卡合');
+    let printQuantity=this.MakeUp(long,wide,quantity);
+    console.log('test'+printQuantity);
     query.first().then(results=>{
       let p=results.get('price');
       let addPrice=results.get('addPrice');
-      p=p+Number(quantity-1000 >0 ? addPrice*(quantity-1000) : 0);
+      p=p+Number(printQuantity-1000 >0 ? addPrice*(printQuantity-1000) : 0);
       resolve(p/quantity);
     })
   })

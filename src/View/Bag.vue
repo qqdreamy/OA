@@ -200,6 +200,8 @@ export default {
         }
       }).then(()=>{//卡合+加工费
         return js_CountPrice.KaHePromise(this.BagLong,this.BagWide,quantity).then(value=>{
+          console.log('卡盒'+this.BagLong);
+          console.log('数量'+quantity);
           return value;
         }).then(kahe=>{
           return js_CountPrice.ProcessPromise(`手提袋${this.bagType}`,this.quantity).then(value=>{
@@ -244,8 +246,10 @@ export default {
       }).then(()=>{
         //自动计算总价
         for (var i in this.boxPrice){
+          console.log(this.boxPrice[i]);
           this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
         }
+        //console.log(this.boxPrice.count);
         this.boxPrice.count=(this.boxPrice.count*profit+this.boxPrice.count).toFixed(2);
         this.dialogPriceVisible=true;
       }).catch(value=>console.log(value))
