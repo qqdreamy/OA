@@ -94,19 +94,6 @@ export default {
       }, function (error) {
         alert(JSON.stringify(error));
       });
-     /* var config = {
-        authDomain: "decbzoa.wilddog.com",
-        syncURL: "https://decbzoa.wilddogio.com"
-      };
-      wilddog.auth().signInWithEmailAndPassword(this.form.email, this.form.password)
-      .then(()=> {
-        this.dialogFormVisible=false;
-        this.fullscreenLoading=false;
-        this.$router.push('/PriceSet');
-      }).catch(err=> {
-        this.fullscreenLoading=false;
-        console.log('login failed ->',err);
-      });*/
     }
   }
 }

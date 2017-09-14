@@ -29,7 +29,7 @@
     <el-form-item label="数量">
       <el-col :span="4">
         <el-select placeholder="请订单数量" v-model="quantity">
-          <el-option v-for="item in this.quantitys" :label="item.value" :value="item.value">
+          <el-option v-for="item in this.quantitys" :key="item.value" :label="item.value" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
@@ -100,7 +100,6 @@ export default {
         Cardboard:0,
         drapery:0,
         process:0,
-
       }
     }
   },
@@ -123,8 +122,6 @@ export default {
       }
     },
     CountPrice:function(){
-      var data = require("../json/CardboardPrice.json");
-      var jdata=require("../json/CopperplatePaper.json");
       var TopCardboardPrice;
       const CorrugatedName='三层瓦楞';//设置瓦楞
       const cardboard='双灰板';//默认使用双灰板
@@ -137,31 +134,28 @@ export default {
             this.boxPrice.Cardboard=value.toFixed(2);
           })
         }else{
-          return js_CountPrice.Corrugated(this.CardboardLong,this.CardboardWide,CorrugatedName).then(value=>{
+          return js_CountPrice.CorrugatedPromise(this.CardboardLong,this.CardboardWide,CorrugatedName).then(value=>{
             this.boxPrice.Cardboard=value.toFixed(2);
           })
         }
+      }).then(()=>{
+        //绸布
+        const draperyType=this.draperyType==1 ? '高档绸布' : '普通绸布';
+        //console.log(this.draperyLong,this.draperyWide,Number(this.quantity),draperyType);
+        return js_CountPrice.DraperyPromise(this.draperyLong,this.draperyWide,Number(this.quantity),draperyType).then(value=>{
+          this.boxPrice.drapery=value.toFixed(2);
+        })
+      }).then(()=>{
+        //计算合计价格
+        for (var i in this.boxPrice){
+          this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
+          //console.log('test'+this.boxPrice.count);
+        }
+        this.boxPrice.count=this.boxPrice.count.toFixed(2);
+        //console.log(SizeCount.carton());
+        this.dialogPriceVisible=true;
+
       })
-      //1.2绸布
-      if(this.isdrapery){
-        const draperyPrice=this.draperyType==1 ? jdata['绸布']['高档绸布'] : jdata['绸布']['普通绸布'];
-        console.log('米数'+SizeCount.drapery(this.draperyLong,this.draperyWide,this.quantity));
-        this.boxPrice.drapery=(SizeCount.drapery(this.draperyLong,this.draperyWide,this.quantity)*draperyPrice/this.quantity).toFixed(2);
-      }
-      //计算其他价格
-      var boxJson=require("../json/process.json");
-      const boxName='内托1';
-      //加工费
-      this.boxPrice.process=this.quantity < 2000 ? boxJson[boxName]['起步价']/this.quantity : boxJson[boxName][this.quantity];
-      //this.boxPrice.process=boxJson[boxName]
-      //计算合计价格
-      for (var i in this.boxPrice){
-        this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
-      }
-      this.boxPrice.count=this.boxPrice.count.toFixed(2);
-      //纸箱算法
-      console.log(SizeCount.carton());
-      this.dialogPriceVisible=true;
     }
   }
 }

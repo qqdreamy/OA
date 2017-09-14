@@ -146,7 +146,6 @@
 
 <script>
 import AV from 'leancloud-storage'
-import wilddog from 'wilddog'
 import js_CountPrice from '../lib/CountPrice.js'
 export default {
   data () {
