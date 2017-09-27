@@ -21,7 +21,7 @@
     <el-form-item label="数量">
       <el-col :span="4">
         <el-select placeholder="请订单数量" v-model="quantity">
-          <el-option v-for="item in this.quantitys" :label="item.value" :value="item.value">
+          <el-option v-for="item in this.quantitys" :key="item.value" :label="item.value" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
@@ -186,13 +186,13 @@
       <template v-if="isCardboard=='含纸板'">
       <el-col :span="3">
         <el-select placeholder="请选择纸板" v-model="cardboard">
-          <el-option v-for="item in this.cardboards" :label="item.label" :value="item.value">
+          <el-option v-for="item in this.cardboards" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
       <el-col :span="3" :offset="1">
         <el-select placeholder="请选择厚度" v-model="thick">
-          <el-option v-for="item in this.thicks" :label="item.label" :value="item.value">
+          <el-option v-for="item in this.thicks" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
@@ -202,13 +202,13 @@
       <template v-if="isOuterCardboard">
       <el-col :span="3">
       <el-select placeholder="请选择纸板" v-model="outerCardboard">
-        <el-option v-for="item in this.cardboards" :label="item.label" :value="item.value">
+        <el-option v-for="item in this.cardboards" :key="item.value" :label="item.label" :value="item.value">
         </el-option>
       </el-select>
       </el-col>
       <el-col :span="3" :offset="1">
         <el-select placeholder="请选择厚度" v-model="outerThick">
-          <el-option v-for="item in this.thicks" :label="item.label" :value="item.value">
+          <el-option v-for="item in this.thicks" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
@@ -398,7 +398,8 @@ export default {
       let PrintPrint=0;
       let cuttQuantity=0;//计算刀版数量
       this.loading=true;
-      js_CountPrice.ProcessPromise('书型盒1',this.quantity).then(value=>{
+      let boxName=this.long<250 ? '书型盒1(小)' : this.long>350 ? '书型盒1(大)' : '书型盒1(中)';
+      js_CountPrice.ProcessPromise(boxName,this.quantity).then(value=>{
         this.boxPrice.process=value.toFixed(2);
       }).then(()=>{//纸板
         if(this.isCardboard=='含纸板'){

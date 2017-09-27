@@ -26,8 +26,6 @@ export default {
         label:"3.0mm"
       }],
       quantitys:[{
-        value:"100"
-      },{
         value:"500"
       },{
         value:"1000"

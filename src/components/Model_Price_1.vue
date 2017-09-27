@@ -6,6 +6,8 @@
         <el-select placeholder="请选择材料" v-model="material">
           <el-option label="1.5mm纸板" value="1"></el-option>
           <el-option label="瓦楞" value="2"></el-option>
+          <el-option label="珍珠棉" value="3"></el-option>
+          <el-option label="PE" value="4"></el-option>
         </el-select>
       </el-col>
     </el-form-item>
@@ -63,12 +65,14 @@
       </el-col>
     </el-form-item>
   </el-form>
-  <el-dialog title="报价" @close="closePrice" v-model="dialogPriceVisible" :close-on-click-modal="false" :close-on-press-escape="false">
-    基材：{{this.boxPrice.Cardboard}}
-    绸布：{{this.boxPrice.drapery}}</br>
-    加工费：{{this.boxPrice.process}}</br>
-    合计：{{this.boxPrice.count}}
-  </el-dialog>
+  <dialogPrice v-on:closePrice="closePrice" :dialogPriceVisible="dialogPriceVisible">
+     <p slot="list"> 
+      基材：{{this.boxPrice.Cardboard}}
+      绸布：{{this.boxPrice.drapery}}</br>
+      加工费：{{this.boxPrice.process}}</br>
+     </p>
+    <P slot="count">合计：{{this.boxPrice.count}}</P>
+  </dialogPrice>
 </div>
 </template>
 
@@ -76,6 +80,8 @@
 import SizeCount from '../lib/SizeCount.js'
 import selectData from '../data/selectData.vue'
 import js_CountPrice from '../lib/CountPrice.js'
+import dialogPrice from '../components/dialogPrice.vue'
+
 export default {
   data () {
     return {
@@ -105,7 +111,7 @@ export default {
   },
   mixins: [selectData],
   components: {
-    
+    dialogPrice
   },
   computed:{
     CardboardLong:function(){
@@ -117,10 +123,11 @@ export default {
   },
   methods:{
     closePrice:function(){//清空价格数据
-      for (var i in this.boxPrice){
-        this.boxPrice[i]=0;
-      }
-    },
+    this.dialogPriceVisible=false;
+    for (var i in this.boxPrice){
+      this.boxPrice[i]=0;
+    }
+  },
     CountPrice:function(){
       var TopCardboardPrice;
       const CorrugatedName='三层瓦楞';//设置瓦楞
@@ -133,8 +140,17 @@ export default {
           return js_CountPrice.CardboardPromise(this.CardboardLong,this.CardboardWide,cardboard,thick,true).then(value=>{
             this.boxPrice.Cardboard=value.toFixed(2);
           })
-        }else{
+        }else if(this.material==2){
           return js_CountPrice.CorrugatedPromise(this.CardboardLong,this.CardboardWide,CorrugatedName).then(value=>{
+            this.boxPrice.Cardboard=value.toFixed(2);
+          })
+        }else if(this.material==3){
+          return js_CountPrice.EPE(this.long,this.wide,this.height,'珍珠棉').then(value=>{
+            this.boxPrice.Cardboard=value.toFixed(2);
+          })
+        }
+        else if(this.material==4){
+          return js_CountPrice.EPE(this.long,this.wide,this.height,'PE').then(value=>{
             this.boxPrice.Cardboard=value.toFixed(2);
           })
         }
@@ -154,7 +170,6 @@ export default {
         this.boxPrice.count=this.boxPrice.count.toFixed(2);
         //console.log(SizeCount.carton());
         this.dialogPriceVisible=true;
-
       })
     }
   }

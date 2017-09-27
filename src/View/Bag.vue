@@ -1,6 +1,6 @@
 <template>
   <div>
-  <el-form label-width="80px">
+  <el-form label-width="80px" v-loading.body="loading" element-loading-text="正在计算ing">
     <el-form-item label="类型">
       <el-col :span="4">
         <img src="../assets/bag_model.jpg" width="128px" height="128px" alt="郁金香" />
@@ -28,7 +28,7 @@
     <el-form-item label="数量">
       <el-col :span="4">
         <el-select placeholder="请订单数量" v-model="quantity">
-          <el-option v-for="item in this.quantitys" :label="item.value" :value="item.value">
+          <el-option v-for="item in this.quantitys" :key="item.value" :label="item.value" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
@@ -37,7 +37,6 @@
       <template>
       <el-col :span="3">
         <el-select placeholder="请选择纸张" v-model="paper">
-          <el-option label="铜版纸" value="铜版纸"></el-option>
           <el-option label="白卡纸" value="白卡纸"></el-option>
           <el-option label="特种纸" value="特种纸"></el-option>
           <el-option label="牛皮纸" value="牛皮纸"></el-option>
@@ -47,7 +46,7 @@
       <el-col :span="3" :offset="1">
         <template v-if="paper!='自设纸'">
           <el-select placeholder="请选择克重" v-model="paperWeight">
-            <el-option v-for="item in this.paperWeights" :label="item.label" :value="item.value">
+            <el-option v-for="item in this.paperWeights" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </template>
@@ -113,22 +112,26 @@
       </el-col>
     </el-form-item>
   </el-form>
-  <el-dialog title="报价" @close="closePrice" v-model="dialogPriceVisible" :close-on-click-modal="false" :close-on-press-escape="false">
-      纸张：{{this.boxPrice.paper}}
-      印刷：{{this.boxPrice.print}}</br>
-      覆膜：{{this.boxPrice.film}}</br>
-      提绳：{{this.boxPrice.rope}}</br>
-      烫金：{{this.boxPrice.permed}}</br>
-      UV：{{this.boxPrice.UV}}</br>
-      加工费(含卡合):{{this.boxPrice.process}}</br>
-      合计：{{this.boxPrice.count}}
-  </el-dialog>
+  <dialogPrice v-on:closePrice="closePrice" :dialogPriceVisible="dialogPriceVisible">
+    <p slot="list"> 
+    纸张：{{this.boxPrice.paper}}
+    印刷：{{this.boxPrice.print}}</br>
+    覆膜：{{this.boxPrice.film}}</br>
+    提绳：{{this.boxPrice.rope}}</br>
+    烫金：{{this.boxPrice.permed}}</br>
+    UV：{{this.boxPrice.UV}}</br>
+    加工费(含卡合[刀模]):{{this.boxPrice.process}}</br>
+    </p>
+    <P slot="count">合计：{{this.boxPrice.count}}</P>
+</dialogPrice>
   </div>
 </template>
 
 <script>
 import selectData from '../data/selectData.vue'
 import js_CountPrice from '../lib/CountPrice.js'
+import dialogPrice from '../components/dialogPrice.vue'
+
 export default {
   data () {
     return {
@@ -149,6 +152,7 @@ export default {
       uvLong:0,
       uvWide:0,
       dialogPriceVisible:false,
+      loading:false,
       boxPrice:{
         count:0,
         paper:0,
@@ -163,12 +167,13 @@ export default {
   },
   mixins: [selectData],
   components: {
-    
+    dialogPrice
   },
   computed:{
     BagLong:function(){
       const MaxLong=1194-30;//最大单粘尺寸
       if(this.long*2+this.wide*2+20>MaxLong){
+        console.log(this.bagType);
         this.bagType=2;
         return this.long+(this.wide-1)+20
       }else{
@@ -184,30 +189,38 @@ export default {
   },
   methods:{
     closePrice:function(){//清空数据
+      this.dialogPriceVisible=false;
       for (var i in this.boxPrice){
         this.boxPrice[i]=0;
       }
     },
     CountPrice:function(){
+      this.loading=true;
       let BagLong=this.BagLong;
       let quantity=this.bagType==2?this.quantity*2 : this.quantity;
-      const profit=0.3//30%利润计算常量
-      js_CountPrice.ColorSurfacePromise(this.BagLong,this.BagWide,this.paper,this.paperWeight).then(value=>{
-        if(this.bagType==2){
-          this.boxPrice.paper=(value*2).toFixed(2);
-        }else{
-          this.boxPrice.paper=value.toFixed(2);
-        }
-      }).then(()=>{//卡合+加工费
-        return js_CountPrice.KaHePromise(this.BagLong,this.BagWide,quantity).then(value=>{
-          console.log('卡盒'+this.BagLong);
-          console.log('数量'+quantity);
-          return value;
-        }).then(kahe=>{
-          return js_CountPrice.ProcessPromise(`手提袋${this.bagType}`,this.quantity).then(value=>{
-            this.boxPrice.process=(value+kahe).toFixed(2);
-          }) 
+      const profit=0.5//50%利润计算常量
+      js_CountPrice.KaHePromise(this.BagLong,this.BagWide,quantity).then(value=>{
+          return value
+      }).then(kahe=>{
+        return js_CountPrice.ProcessPromise(`手提袋${this.bagType}`,this.quantity).then(value=>{
+          this.boxPrice.process=(value+kahe).toFixed(2);
         })
+      }).then(()=>{
+        if(this.paper=='自设纸'){
+          return js_CountPrice.ColorSurfacePromise(this.BagLong,this.BagWide,this.paper,this.paperWeight,this.pagePrice).then(value=>{
+          if(this.bagType==2){
+            this.boxPrice.paper=(value*2).toFixed(2);
+          }else{
+            this.boxPrice.paper=value.toFixed(2);
+          }});
+        }else{
+          return js_CountPrice.ColorSurfacePromise(this.BagLong,this.BagWide,this.paper,this.paperWeight).then(value=>{
+          if(this.bagType==2){
+            this.boxPrice.paper=(value*2).toFixed(2);
+          }else{
+            this.boxPrice.paper=value.toFixed(2);
+          }});
+        }
       }).then(()=>{//印刷
         if(this.print!='4'){
           return js_CountPrice.PrintPromise(this.BagLong,this.BagWide,quantity,this.print).then(value=>{
@@ -252,6 +265,7 @@ export default {
         //console.log(this.boxPrice.count);
         this.boxPrice.count=(this.boxPrice.count*profit+this.boxPrice.count).toFixed(2);
         this.dialogPriceVisible=true;
+        this.loading=false;
       }).catch(value=>console.log(value))
     }
   }

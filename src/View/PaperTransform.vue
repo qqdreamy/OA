@@ -4,24 +4,24 @@
       <el-form-item >
         纸张尺寸
         <el-select v-model="tableData[0].size">
-          <el-option v-for="item in Sizes" :label="item.label" :value="item.value">
+          <el-option v-for="item in Sizes" :key="item.value"  :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item >
-        克重
         <el-input placeholder="自定义克重"  v-model="tableData[0].weight">
+          <template slot="prepend">克重</template>
         </el-input>
         <el-select placeholder="请选择克重" v-model="tableData[0].weight">
-          <el-option-group v-for="group in Weights" :label="group.label">
-            <el-option v-for="item in group.options" :label="item.label" :value="item.value">
+          <el-option-group v-for="group in Weights" :key="group.label" :label="group.label">
+            <el-option v-for="item in group.options" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-option-group>
         </el-select>
       </el-form-item>
       <el-form-item>
-        吨价
         <el-input placeholder="请输入内容" v-on:input="Count"  v-model="tableData[0].tonprice">
+          <template slot="prepend">吨价</template>
         </el-input>
       </el-form-item>
     </el-form>
@@ -110,9 +110,7 @@ export default {
         tonprice: '',
         ream:'',
         price:''
-      }],
-      ream:'',
-      price:''
+      }]
     }
   },
   computed:{

@@ -25,8 +25,11 @@ module.exports.MakeUp=function(long,wide,quantity){
 module.exports.PrintPromise=function(long,wide,quantity,pType){
   return new Promise((resolve,reject)=>{
     let query = new AV.Query('Prints');
+    let long=Number(long);
+    let wide=Number(wide);
     query.select(['price','addPrice']);
     let printQuantity=this.MakeUp(long,wide,quantity);
+    console.log('printQuantity'+printQuantity);
     let printKB=long > 870 ? '全开' : long > 580 ? '对开' : '四开';
     let pName= pType=='1'? '四色印刷' : pType=='3' ? '专色印刷' : '单色印刷';
     query.startsWith('name',pName+'-'+printKB);
@@ -59,9 +62,22 @@ module.exports.CorrugatedPromise=function(long,wide,name){
     query.select(['price']);
     query.startsWith('name','瓦楞片');
     query.first().then(results=>{
-      let Square=long/1000*wide/1000;
+      let Square=(long/1000)*(wide/1000);
       let price=results.get('price');
       resolve(Square*price);
+    })
+  })
+}
+//珍珠棉/PE等按立方计算的价格类
+module.exports.EPE=function(long,wide,height,name){
+  return new Promise(function(resolve,reject){
+    let query=new AV.Query('CopperplatePapers');
+    query.select(['price']);
+    query.startsWith('name',name);
+    query.first().then(results=>{
+      let Cube=(long/1000)*(wide/1000)*(height/1000);
+      let price=results.get('price');
+      resolve(Cube*price);
     })
   })
 }
@@ -141,12 +157,12 @@ module.exports.CheckCardboard=function(long,wide,tonPrice,thick,quantity,cutt){
 }
 //计算包纸
 module.exports.ColorSurfacePromise=function(long,wide,paper,paperWeight,price){
+  let dKB=SizeCount.KbCountBig(1,long,wide).count;
+  let zKB=SizeCount.KbCountBig(0,long,wide).count;
   if(typeof(price)!="undefined"){
       return price/zKB;
   }else{
     return new Promise(function(resolve,reject){
-      let dKB=SizeCount.KbCountBig(1,long,wide).count;
-      let zKB=SizeCount.KbCountBig(0,long,wide).count;
       let query = new AV.Query('CopperplatePapers');
       query.select(['price']);
       query.startsWith('name',paper);
@@ -165,6 +181,8 @@ module.exports.ColorSurfacePromise=function(long,wide,paper,paperWeight,price){
 module.exports.KaHePromise=function(long,wide,quantity){
   return new Promise((resolve,reject)=>{
     let query = new AV.Query('FinishPrints');
+    let long=Number(long);
+    let wide=Number(wide);
     query.select(['price','addPrice']);
     query.startsWith('name','卡合');
     let printQuantity=this.MakeUp(long,wide,quantity);

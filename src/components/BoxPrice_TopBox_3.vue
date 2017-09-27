@@ -21,7 +21,7 @@
     <el-form-item label="数量">
       <el-col :span="4">
         <el-select placeholder="请订单数量" v-model="quantity">
-          <el-option v-for="item in this.quantitys" :label="item.value" :value="item.value">
+          <el-option v-for="item in this.quantitys" :key="item.value" :label="item.value" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
@@ -43,9 +43,10 @@
           <el-option label="半断" value="2"></el-option>
         </el-select>
       </el-col>
-      <el-col :span="4" :offset="1">
-        <el-input placeholder="" v-model="curling">
-          <template slot="prepend">卷边：</template>
+      <el-col :span="5" :offset="1">
+        <el-input placeholder="" v-model.number="curling">
+          <template slot="prepend">盖-卷边：</template>
+          <el-switch @change="isCurlingBottom" slot="append"  v-model="isCurlingBottomSwitch"></el-switch>
         </el-input>
       </el-col>
     </el-form-item>
@@ -176,13 +177,13 @@
       <template v-if="isCardboard=='含纸板'">
       <el-col :span="3">
         <el-select placeholder="请选择纸板" v-model="cardboard">
-          <el-option v-for="item in this.cardboards" :label="item.label" :value="item.value">
+          <el-option v-for="item in this.cardboards" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
       <el-col :span="3" :offset="1">
         <el-select placeholder="请选择厚度" v-model="thick">
-          <el-option v-for="item in this.thicks" :label="item.label" :value="item.value">
+          <el-option v-for="item in this.thicks" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
@@ -192,13 +193,13 @@
         <template v-if="isincloseCardboard">
         <el-col :span="3" >
           <el-select placeholder="请选择纸板" v-model="incloseCardboard">
-            <el-option v-for="item in this.cardboards" :label="item.label" :value="item.value">
+            <el-option v-for="item in this.cardboards" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-col>
         <el-col :span="3" :offset="1">
           <el-select placeholder="请选择厚度" v-model="incloseThick">
-          <el-option v-for="item in this.thicks" :label="item.label" :value="item.value">
+          <el-option v-for="item in this.thicks" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
           </el-select>
         </el-col>
@@ -230,7 +231,8 @@
       </el-col>
     </el-form-item>
   </el-form>
-  <el-dialog title="报价" @close="closePrice" v-model="dialogPriceVisible" :close-on-click-modal="false" :close-on-press-escape="false">
+  <dialogPrice v-on:closePrice="closePrice" :dialogPriceVisible="dialogPriceVisible">
+    <p slot="list">
     盖包纸：{{this.boxPrice.topPage}}
     盖-覆膜：{{this.boxPrice.film}}</br>
     底包纸：{{this.boxPrice.bottomPage}}
@@ -246,14 +248,16 @@
     V槽：{{this.boxPrice.Vcut}}</br>
     纸箱：{{this.boxPrice.carton}}
     加工费：{{this.boxPrice.process}}</br>
-    合计：{{this.boxPrice.count}}
-  </el-dialog>
+    </p>
+    <P slot="count">合计：{{this.boxPrice.count}}</P>
+  </dialogPrice>
 </div>
 </template>
 <script>
 import SizeCount from '../lib/SizeCount.js'
 import js_CountPrice from '../lib/CountPrice.js'
 import selectData from '../data/selectData.vue'
+import dialogPrice from '../components/dialogPrice.vue'
 export default {
   data () {
     return {
@@ -272,6 +276,7 @@ export default {
       incloseCardboard:'双灰板',
       incloseThick:'2',
       curling:15,
+      isCurlingBottomSwitch:false,
       thick:'2',
       print:'1',
       technique:'1',
@@ -319,7 +324,7 @@ export default {
   },
   mixins: [selectData],
   components: {
-    
+    dialogPrice
   },
   computed:{
     changeNumber:function(){//开料尺寸增加+3或10
@@ -353,10 +358,10 @@ export default {
       return this.topCardboardWide+Number(this.curling*2)+Number(this.thick*2)+1;
     },
     bottomColorSurfaceLong:function(){
-      return this.bottomCardboardLong+Number(this.curling*2)+Number(this.thick*2)+1;
+      return this.bottomCardboardLong+Number(20*2)+Number(this.thick*2)+1;
     },
     bottomColorSurfaceWide:function(){
-      return this.bottomCardboardWide+Number(this.curling*2)+Number(this.thick*2)+1;
+      return this.bottomCardboardWide+Number(20*2)+Number(this.thick*2)+1;
     },
     incloseCardboardLong:function(){//围框纸板
       return (this.long-this.thick*2-1)+(this.wide-this.thick*2-1)
@@ -373,14 +378,24 @@ export default {
   },
   methods:{
     closePrice:function(){//清空数据
+      this.dialogPriceVisible=false;
       for (var i in this.boxPrice){
         this.boxPrice[i]=0;
+      }
+    },
+    //选择盖-卷边到底计算事件
+    isCurlingBottom:function(){
+      if(this.isCurlingBottomSwitch){
+        this.curling=Number(this.topHeight+Number(this.thick));
+      }else{
+        this.curling=20;
       }
     },
     CountPrice:function(){
       this.loading=true;
       let cuttQuantity=0;
-      js_CountPrice.ProcessPromise('天地盖3',this.quantity).then(value=>{
+      let boxName=this.long<250 ? '围框天地盖(小)' : this.long>350 ? '围框天地盖(大)' : '围框天地盖(中)';
+      js_CountPrice.ProcessPromise(boxName,this.quantity).then(value=>{
         this.boxPrice.process=value.toFixed(2);
       }).then(()=>{
         if(this.isCardboard=='含纸板'){//判断是否含纸板  
