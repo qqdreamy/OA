@@ -21,6 +21,9 @@ import Carton from './View/Carton.vue'
 import Home from './View/home.vue'
 import Bag from './View/Bag.vue'
 import PriceSet from './view/PriceSet.vue'
+import Corrugate from './view/corrugate.vue'
+import HandleBox from './components/Corrugate/Corrugate_HandleBox.vue'
+import DoubleInsertBox from './components/Corrugate/Corrugate_DoubleInsertBox.vue'
 
 Vue.use(VueRouter)
 
@@ -63,6 +66,12 @@ const routes = [
   },
   { path: '/Calendar_Price',component:Calendar_Price },
   { path: '/Bag',component:Bag },
+  {path:'/Corrugate',component:Corrugate,
+  children:[
+    {path:'HandleBox',component:HandleBox},
+    {path:'DoubleInsertBox',component:DoubleInsertBox}
+    ]
+  },
   { path: '/PriceSet',component:PriceSet },
   { path: '/Model_Price',component:Model_Price,
     children:[

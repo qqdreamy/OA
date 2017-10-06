@@ -13,8 +13,8 @@ AV.init({ appId, appKey });
 //拼板算法
 module.exports.MakeUp=function(long,wide,quantity){
   let printQuantity=quantity;
-  if(Math.floor(590 / (long+6))>=Math.floor(440 / (wide+6))){//4K尺寸可拼多个进行拼板算法
-    printQuantity=quantity/Math.floor(440 / (wide+6));
+  if(Math.floor(590 / (long+6))>=Math.floor(440 / (wide+6)) && Math.floor(590 / (long+6))!=0){//4K尺寸可拼多个进行拼板算法
+    printQuantity=quantity/(Math.floor(440 / (wide+6))*Math.floor(590 / (long+6)));
   }else if(long<590){
     printQuantity=quantity/Math.floor(590 / (long+6));
   }
@@ -22,14 +22,16 @@ module.exports.MakeUp=function(long,wide,quantity){
 }
 //印刷费
 //2017-02-17加入拼板算法
-module.exports.PrintPromise=function(long,wide,quantity,pType){
+module.exports.PrintPromise=function(clong,cwide,quantity,pType){
   return new Promise((resolve,reject)=>{
     let query = new AV.Query('Prints');
-    let long=Number(long);
-    let wide=Number(wide);
+    let long=Number(clong);
+    let wide=Number(cwide);
     query.select(['price','addPrice']);
+    console.log(long);
+    console.log(wide);
     let printQuantity=this.MakeUp(long,wide,quantity);
-    console.log('printQuantity'+printQuantity);
+    console.log('printQuantity:'+printQuantity);
     let printKB=long > 870 ? '全开' : long > 580 ? '对开' : '四开';
     let pName= pType=='1'? '四色印刷' : pType=='3' ? '专色印刷' : '单色印刷';
     query.startsWith('name',pName+'-'+printKB);
@@ -37,7 +39,6 @@ module.exports.PrintPromise=function(long,wide,quantity,pType){
       let p=results.get('price');
       let addPrice=results.get('addPrice');
       p=Number(p)+Number(printQuantity-1000 >0 ? addPrice*(printQuantity-1000) : 0);
-      console.log(p);
       resolve(p/quantity);
     })
   })
@@ -55,7 +56,7 @@ module.exports.ProcessPromise=function(name,quantity){
     })
   })
 }
-//瓦楞片
+//瓦楞片(内托)
 module.exports.CorrugatedPromise=function(long,wide,name){
   return new Promise(function(resolve,reject){
     let query=new AV.Query('CopperplatePapers');
@@ -67,6 +68,19 @@ module.exports.CorrugatedPromise=function(long,wide,name){
       resolve(Square*price);
     })
   })
+}
+//裱3层瓦楞
+module.exports.CorrugatedMount=function(long,wide,name){
+  return new Promise(function(resolve,reject){
+    let query=new AV.Query('FinishPrints');
+    query.select(['price']);
+    query.startsWith('name','裱三层瓦愣');
+    query.first().then(results=>{
+      let Square=(long/1000)*(wide/1000);
+      let price=results.get('price');
+      resolve(Square*price);
+    })
+  }) 
 }
 //珍珠棉/PE等按立方计算的价格类
 module.exports.EPE=function(long,wide,height,name){
@@ -159,7 +173,8 @@ module.exports.CheckCardboard=function(long,wide,tonPrice,thick,quantity,cutt){
 module.exports.ColorSurfacePromise=function(long,wide,paper,paperWeight,price){
   let dKB=SizeCount.KbCountBig(1,long,wide).count;
   let zKB=SizeCount.KbCountBig(0,long,wide).count;
-  if(typeof(price)!="undefined"){
+  if(typeof(price)!="undefined" && price!=0){
+    console.log(1);
       return price/zKB;
   }else{
     return new Promise(function(resolve,reject){
@@ -178,20 +193,34 @@ module.exports.ColorSurfacePromise=function(long,wide,paper,paperWeight,price){
   }
 }
 //卡合
-module.exports.KaHePromise=function(long,wide,quantity){
+module.exports.KaHePromise=function(clong,cwide,quantity){
   return new Promise((resolve,reject)=>{
     let query = new AV.Query('FinishPrints');
-    let long=Number(long);
-    let wide=Number(wide);
+    let long=Number(clong);
+    let wide=Number(cwide);
     query.select(['price','addPrice']);
     query.startsWith('name','卡合');
     let printQuantity=this.MakeUp(long,wide,quantity);
+    console.log(printQuantity);
     console.log('test'+printQuantity);
     query.first().then(results=>{
       let p=results.get('price');
       let addPrice=results.get('addPrice');
       p=p+Number(printQuantity-1000 >0 ? addPrice*(printQuantity-1000) : 0);
       resolve(p/quantity);
+    })
+  })
+}
+//粘盒
+module.exports.StickyBox=function(quantity){
+  return new Promise((resolve,reject)=>{
+    let query=new AV.Query('FinishPrints');
+    query.select(['price','addPrice']);
+    query.startsWith('name','粘盒');
+    query.first().then(results=>{
+      let addPrice=results.get('addPrice');
+      let price=results.get('price');
+      resolve(quantity*addPrice>price ? quantity*addPrice : price/quantity);
     })
   })
 }

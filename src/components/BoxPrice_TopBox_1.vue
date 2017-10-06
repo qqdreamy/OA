@@ -349,7 +349,6 @@ export default {
         this.boxPrice.process=value.toFixed(2);
       }).then(()=>{
         if(this.isCardboard=='含纸板'){
-          
           return js_CountPrice.CardboardPromise(this.topCardboardLong+this.changeNumber,this.topCardboardWide+this.changeNumber,this.cardboard,this.thick,true).then(value=>{
             this.boxPrice.topCardboard=value.toFixed(2);
           }).then(()=>{
@@ -398,7 +397,6 @@ export default {
           }
         }
       }).then(()=>{//计算印刷
-      console.log('印刷'+this.topcolorsurfaceLong,this.topcolorsurfaceWide);
         if(this.print!='4' && this.isPaper=='含包纸'){
           return js_CountPrice.PrintPromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity,this.print).then(value=>{
             console.log('ddd'+value);
