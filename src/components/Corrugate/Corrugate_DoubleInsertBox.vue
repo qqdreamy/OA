@@ -112,7 +112,7 @@ export default {
       wide:100,
       height:200,
       paper:'白卡纸',
-      paperWeight:'250',
+      paperWeight:'300',
       quantity:'1000',
       print:'1',
       film:false,
