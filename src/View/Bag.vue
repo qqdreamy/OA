@@ -62,7 +62,7 @@
         </template>
         <template v-if="paper=='自设纸'">
           <el-input placeholder="单价" v-model.number="pagePrice">
-            <template slot="append">元</template>
+            <template slot="append">元整</template>
           </el-input>
         </template>
       </el-col>
