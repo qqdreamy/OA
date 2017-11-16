@@ -24,6 +24,8 @@ import PriceSet from './view/PriceSet.vue'
 import Corrugate from './view/corrugate.vue'
 import HandleBox from './components/Corrugate/Corrugate_HandleBox.vue'
 import DoubleInsertBox from './components/Corrugate/Corrugate_DoubleInsertBox.vue'
+import AircraftBox from './components/Corrugate/Corrugate_AircraftBox.vue'
+import DrawerBox from './components/Corrugate/Corrugate_DrawerBox.vue'
 
 Vue.use(VueRouter)
 
@@ -69,7 +71,9 @@ const routes = [
   {path:'/Corrugate',component:Corrugate,
   children:[
     {path:'HandleBox',component:HandleBox},
-    {path:'DoubleInsertBox',component:DoubleInsertBox}
+    {path:'DoubleInsertBox',component:DoubleInsertBox},
+    {path:'AircraftBox',component:AircraftBox},
+    {path:'DrawerBox',component:DrawerBox}
     ]
   },
   { path: '/PriceSet',component:PriceSet },

@@ -1,23 +1,20 @@
 <template>
   <div>
     <el-form :inline="true"  class="demo-form-inline">
-      <el-form-item >
-        纸张尺寸
-        <el-select v-model="tableData[0].size">
-          <el-option v-for="item in Sizes" :key="item.value"  :label="item.label" :value="item.value">
-          </el-option>
-        </el-select>
+      <el-form-item label="纸张尺寸">
+        <el-input placeholder="自定义尺寸"  v-model="long">
+          <template slot="prepend">长</template>
+        </el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-input placeholder="自定义尺寸"  v-model="wide">
+          <template slot="prepend">宽</template>
+        </el-input>
       </el-form-item>
       <el-form-item >
         <el-input placeholder="自定义克重"  v-model="tableData[0].weight">
           <template slot="prepend">克重</template>
         </el-input>
-        <el-select placeholder="请选择克重" v-model="tableData[0].weight">
-          <el-option-group v-for="group in Weights" :key="group.label" :label="group.label">
-            <el-option v-for="item in group.options" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-          </el-option-group>
-        </el-select>
       </el-form-item>
       <el-form-item>
         <el-input placeholder="请输入内容" v-on:input="Count"  v-model="tableData[0].tonprice">
@@ -25,13 +22,29 @@
         </el-input>
       </el-form-item>
     </el-form>
+    <el-row :gutter="10">
+      <el-col :span="7"   :offset="1">
+        <el-select v-model="tableData[0].size">
+          <el-option v-for="item in Sizes" :key="item.value"  :label="item.label" :value="item.value">
+          </el-option>
+        </el-select>
+      </el-col>
+      <el-col :span="7" :offset="3">
+        <el-select placeholder="请选择克重" v-model="tableData[0].weight">
+          <el-option-group v-for="group in Weights" :key="group.label" :label="group.label">
+            <el-option v-for="item in group.options" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-option-group>
+        </el-select>
+      </el-col>
+    </el-row>
       <el-table
           :data="tableData"
           style="width: 100%">
-          <el-table-column
-            prop="size"
-            label="纸张尺寸"
-            width="180">
+          <el-table-column label="纸张尺寸" width="180">
+            <template scope="scope">
+              {{long}}*{{wide}}
+            </template>
           </el-table-column>
           <el-table-column
             prop="weight"
@@ -57,6 +70,8 @@
 export default {
   data () {
     return {
+      long:889,
+      wide:1194,
       Sizes: [{
         value: '889*1194',
         label: '889*1194'
@@ -115,11 +130,8 @@ export default {
   },
   computed:{
     ream:function(){
-      if(this.tableData[0].size=='889*1194'){
-        return (this.tableData[0].tonprice/1884*this.tableData[0].weight).toFixed(2);
-      }else{
-        return (this.tableData[0].tonprice/2327*this.tableData[0].weight).toFixed(2);
-      }
+      let cs=1000*1000/(((this.long/1000)*(this.wide/1000))*500);
+      return (this.tableData[0].tonprice/cs*this.tableData[0].weight).toFixed(2);
     },
     price:function(){
       return (this.ream/500).toFixed(2);

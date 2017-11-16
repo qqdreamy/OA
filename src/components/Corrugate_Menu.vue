@@ -18,6 +18,24 @@
       </div>
     </el-card>
   </el-col>
+  </el-col>
+    <el-col :span="3">
+    <el-card :body-style="{ padding: '0px' }" class="menuImage" @click.native="CheckBoxType(4)">
+      <img src="../assets/05.png" >
+      <div style="text-align:center">
+        <div class="name" v-bind:class="{'className':id==4}">抽屉盒</div>
+      </div>
+    </el-card>
+  </el-col>
+  </el-col>
+    <el-col :span="3">
+    <el-card :body-style="{ padding: '0px' }" class="menuImage" @click.native="CheckBoxType(3)">
+      <img src="../assets/04.png" >
+      <div style="text-align:center">
+        <div class="name" v-bind:class="{'className':id==3}">飞机盒</div>
+      </div>
+    </el-card>
+  </el-col>
   <el-col :span="6" :offset="6">
     <img id="imagedetails" :src="imagename" style="width:310px;height:280px">
   </el-col>
@@ -44,8 +62,11 @@ export default {
         this.imagename=require('../assets/0801.png')
         this.id=1;
       }else if(id==3){
-        this.imagename=require('../assets/topbox33.png');
+        this.imagename=require('../assets/0401.png');
         this.id=3;
+      }else if(id==4){
+        this.imagename=require('../assets/0501.png');
+        this.id=4;
       }
       this.$emit('updateID',this.id);
     }

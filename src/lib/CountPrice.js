@@ -13,6 +13,9 @@ AV.init({ appId, appKey });
 //拼板算法
 module.exports.MakeUp=function(long,wide,quantity){
   let printQuantity=quantity;
+  if(wide>long){
+    [long,wide]=[wide,long];
+  }
   if(Math.floor(590 / (long+6))>=Math.floor(440 / (wide+6)) && Math.floor(590 / (long+6))!=0){//4K尺寸可拼多个进行拼板算法
     printQuantity=quantity/(Math.floor(440 / (wide+6))*Math.floor(590 / (long+6)));
   }else if(long<590){
@@ -69,12 +72,25 @@ module.exports.CorrugatedPromise=function(long,wide,name){
     })
   })
 }
+//三层瓦楞直接印刷
+module.exports.ThreeCorrugated=function(long,wide,name){
+  return new Promise(function(resolve,reject){
+    let query=new AV.Query('FinishPrints');
+    query.select(['price']);
+    query.startsWith('name',name);
+    query.first().then(results=>{
+      let Square=(long/1000)*(wide/1000);
+      let price=results.get('price');
+      resolve(Square*price);
+    })
+  }) 
+}
 //裱3层瓦楞
 module.exports.CorrugatedMount=function(long,wide,name){
   return new Promise(function(resolve,reject){
     let query=new AV.Query('FinishPrints');
     query.select(['price']);
-    query.startsWith('name','裱三层瓦愣');
+    query.startsWith('name',name);
     query.first().then(results=>{
       let Square=(long/1000)*(wide/1000);
       let price=results.get('price');
@@ -174,7 +190,6 @@ module.exports.ColorSurfacePromise=function(long,wide,paper,paperWeight,price){
   let dKB=SizeCount.KbCountBig(1,long,wide).count;
   let zKB=SizeCount.KbCountBig(0,long,wide).count;
   if(typeof(price)!="undefined" && price!=0){
-    console.log(1);
       return price/zKB;
   }else{
     return new Promise(function(resolve,reject){
@@ -201,12 +216,10 @@ module.exports.KaHePromise=function(clong,cwide,quantity){
     query.select(['price','addPrice']);
     query.startsWith('name','卡合');
     let printQuantity=this.MakeUp(long,wide,quantity);
-    console.log(printQuantity);
-    console.log('test'+printQuantity);
     query.first().then(results=>{
       let p=results.get('price');
       let addPrice=results.get('addPrice');
-      p=p+Number(printQuantity-1000 >0 ? addPrice*(printQuantity-1000) : 0);
+      p=p+Number(printQuantity-2000 >0 ? addPrice*(printQuantity-2000) : 0);
       resolve(p/quantity);
     })
   })
@@ -220,7 +233,7 @@ module.exports.StickyBox=function(quantity){
     query.first().then(results=>{
       let addPrice=results.get('addPrice');
       let price=results.get('price');
-      resolve(quantity*addPrice>price ? quantity*addPrice : price/quantity);
+      resolve(quantity*addPrice>price ? quantity*addPrice/quantity : price/quantity);
     })
   })
 }

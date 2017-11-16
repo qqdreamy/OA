@@ -236,6 +236,7 @@ export default {
         })
       }else if(this.activeName=='4'){
         this.finishPrint[this.avID].set('price',this.form.price);
+        this.finishPrint[this.avID].set('addPrice',this.form.addPrice);
         this.finishPrint[this.avID].save();
       }else if(this.activeName=='5'){
         console.log(this.process[this.avID]);

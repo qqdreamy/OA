@@ -27,6 +27,9 @@
       </el-col>
     </el-form-item>
     <el-form-item label="材料">
+      <el-col :span="2" >
+        <el-checkbox class="checkbox" v-model="isPaper">外裱纸</el-checkbox>
+      </el-col>
       <el-col :span="3">
         <el-select placeholder="请选择纸张" v-model="paper">
           <el-option label="白卡纸" value="白卡纸"></el-option>
@@ -66,15 +69,24 @@
       <el-col :span="2">
         <el-checkbox class="checkbox" v-model="isCorrugated">裱瓦</el-checkbox>
       </el-col>
-      <el-col :span="2">
-        <el-checkbox class="checkbox" v-model="ispermed">烫处理</el-checkbox>
-      </el-col>
-      <template v-if="ispermed">
+      <template v-if="isCorrugated">
         <el-col :span="3" >
-          <el-select placeholder="请选择烫金" v-model="permed">
-            <el-option label="烫一个部分" value="1"></el-option>
-            <el-option label="烫两个部分" value="2"></el-option>
-            <el-option label="烫多个部分" value="3"></el-option>
+          <el-select placeholder="成型方式" v-model="forming">
+            <el-option label="粘盒" value="1"></el-option>
+            <el-option label="钉盒" value="2"></el-option>
+          </el-select>
+        </el-col>
+      </template>
+      <el-col :span="2">
+        <el-checkbox class="checkbox" v-model="isThreeCorrugated">三层瓦楞</el-checkbox>
+      </el-col>
+      <template v-if="isThreeCorrugated">
+        <el-col :span="3" >
+          <el-select placeholder="请选择印刷" v-model="print">
+            <el-option label="四色" value="1"></el-option>
+            <el-option label="单色" value="2"></el-option>
+            <el-option label="专色" value="3"></el-option>
+            <el-option label="无需印刷" value="4"></el-option>
           </el-select>
         </el-col>
       </template>
@@ -90,8 +102,8 @@
       纸张：{{this.boxPrice.Cardboard}}
       印刷：{{this.boxPrice.print}}</br>
       覆膜:{{this.boxPrice.film}}</br>
-      烫金：{{this.boxPrice.permed}}
-      加工费:{{this.boxPrice.process}}
+      卡合:{{this.boxPrice.process}}
+      瓦楞：{{this.boxPrice.CorrugatedMount}}
      </p>
     <P slot="count">合计：{{this.boxPrice.count}}</P>
   </dialogPrice>
@@ -108,16 +120,19 @@ export default {
   data () {
     return {
       isCorrugated:false,
+      isThreeCorrugated:false,
+      forming:'1', 
+      ispermed:0,
+      permed:'1',
       long:200,
       wide:100,
       height:200,
+      isPaper:false,
       paper:'白卡纸',
       paperWeight:'250',
       quantity:'1000',
       print:'1',
       film:false,
-      ispermed:0,
-      permed:'1',
       material:'1',
       bump:0,
       pagePrice:0,
@@ -126,8 +141,8 @@ export default {
         count:0,
         process:0,
         film:0,
-        permed:0,
         Cardboard:0,
+        CorrugatedMount:0,
         print:0,
       }
     }
@@ -138,10 +153,10 @@ export default {
   },
   computed:{
     ExpandLong:function(){
-      return Number(this.long*2+this.wide*2+20);
+      return this.wide*2+this.height*2+this.height+20;
     },
     ExpandWide:function(){
-      return Number(this.height+this.wide*4);
+      return this.long+this.height*4+20;
     }
   },
   methods:{
@@ -153,18 +168,23 @@ export default {
   },
     CountPrice:function(){
       js_CountPrice.KaHePromise(this.ExpandLong,this.ExpandWide,this.quantity).then(value=>{
-        console.log('加工费'+value);
         this.boxPrice.process=value.toFixed(2);
+      }).then(()=>{
+        if(this.isThreeCorrugated){
+          return js_CountPrice.CorrugatedMount(this.ExpandLong,this.ExpandWide,'三层瓦楞').then(value=>{
+            this.boxPrice.CorrugatedMount=value.toFixed(2);
+          })
+        }
       }).then(()=>{//纸张价格
         if(this.paper=='自设纸'){
           this.boxPrice.Cardboard=js_CountPrice.ColorSurfacePromise(this.ExpandLong,this.ExpandWide,this.paper,this.paperWeight,this.pagePrice).toFixed(2);
-        }else {
+        }else if(this.isPaper){
           return js_CountPrice.ColorSurfacePromise(this.ExpandLong,this.ExpandWide,this.paper,this.paperWeight).then(value=>{
             this.boxPrice.Cardboard=value.toFixed(2);
           });
         }
       }).then(()=>{//计算印刷
-        if(this.print!='4'){
+        if(this.print!='4' && this.isPaper){
           return js_CountPrice.PrintPromise(this.ExpandLong,this.ExpandWide,this.quantity,this.print).then(value=>{
             this.boxPrice.print=value.toFixed(2);
           })
@@ -176,16 +196,10 @@ export default {
           })
         }
       }).then(()=>{
-        if(!this.isCorrugated){
-          return js_CountPrice.StickyBox(this.quantity).then(value=>{
-            this.boxPrice.process=(Number(value)+Number(this.boxPrice.process)).toFixed(2);
-          })
-        }
-      }).then(()=>{
-        if(this.ispermed){
-          return js_CountPrice.PermedPromise(this.permed,this.quantity).then(value=>{
-            this.boxPrice.permed=value.toFixed(2);
-          }) 
+        if(this.isCorrugated){
+          return js_CountPrice.CorrugatedMount(this.ExpandLong,this.ExpandWide,'裱二层瓦愣').then(value=>{
+            this.boxPrice.CorrugatedMount=value.toFixed(2);
+          });
         }
       }).then(()=>{
         for (var i in this.boxPrice){

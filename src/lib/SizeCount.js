@@ -316,17 +316,6 @@ module.exports.Hull=function(name,olong,owide,otoplong,oheight,obottomlong,otake
     var height=oheight*0.01*change;
     var bottomlong=obottomlong*0.01*change;
     var takeheigt=otakeheigt*0.01*change;
-   /* var height=oheight*0.01*change;
-    var buttomWide=owide;
-    var takeHeight=oheight;
-    if(take==2){
-        //书型盒底部纸板，齐平需减纸板厚度
-        buttomWide=(owide-thick);
-        takeHeight=oheight-1;
-    }else if(take==1){
-        
-        takeHeight=oheight-thick-1;
-    }*/
     b.create('line',[[0,0],[long,0]], {straightFirst:false, straightLast:false, strokeWidth:2});
     b.create('line',[[0,0],[0,wide]], {straightFirst:false, straightLast:false, strokeWidth:2});
     b.create('line',[[0,wide],[long,wide]], {straightFirst:false, straightLast:false, strokeWidth:2});

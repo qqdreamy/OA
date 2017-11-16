@@ -46,7 +46,7 @@
         </el-select>
       </el-col>
       <el-col :span="4" :offset="1">
-        <el-input placeholder="" v-model="curling">
+        <el-input placeholder="" v-model.number="curling">
           <template slot="prepend">卷边：</template>
         </el-input>
       </el-col>
@@ -420,7 +420,7 @@ export default {
       }).then(()=>{//皮壳包纸
         if(this.isPaper=='含包纸'){
           if(this.paper=='自设纸'){
-            this.boxPrice.hullPage=js_CountPrice.ColorSurface(this.hullColorSurfaceLong,this.hullColorSurfaceWide,this.paper,this.paperWeight,this.pagePrice).toFixed(2);
+            this.boxPrice.hullPage=js_CountPrice.ColorSurfacePromise(this.hullColorSurfaceLong,this.hullColorSurfaceWide,this.paper,this.paperWeight,this.pagePrice).toFixed(2);
           }else{
             return js_CountPrice.ColorSurfacePromise(this.hullColorSurfaceLong,this.hullColorSurfaceWide,this.paper,this.paperWeight).then(value=>{
               this.boxPrice.hullPage=value.toFixed(2);
@@ -436,7 +436,7 @@ export default {
       }).then(()=>{//内盒包纸
         if(this.isOuterPaper=='含包纸'){
           if(this.outerPaper=='自设纸'){
-            this.boxPrice.boxOuterPage=js_CountPrice.ColorSurface(this.boxOuterColorSurfaceLong,this.boxOuterColorSurfaceWide,this.outerPaper,this.outerPaperWeight,this.outerPagePrice).toFixed(2);
+            this.boxPrice.boxOuterPage=js_CountPrice.ColorSurfacePromise(this.boxOuterColorSurfaceLong,this.boxOuterColorSurfaceWide,this.outerPaper,this.outerPaperWeight,this.outerPagePrice).toFixed(2);
           }else{
             return js_CountPrice.ColorSurfacePromise(this.boxOuterColorSurfaceLong,this.boxOuterColorSurfaceWide,this.outerPaper,this.outerPaperWeight).then(value=>{
               this.boxPrice.boxOuterPage=value.toFixed(2);
@@ -471,7 +471,7 @@ export default {
       }).then(()=>{//内贴纸
         if(this.isSticker){
           if(this.StickerPaper=='自设纸'){
-            this.boxPrice.sticker=js_CountPrice.ColorSurface(this.stickerLong,this.stickerWide,this.StickerPaper,this.StickerPaperWeight,this.StickerPagePrice).toFixed(2);
+            this.boxPrice.sticker=js_CountPrice.ColorSurfacePromise(this.stickerLong,this.stickerWide,this.StickerPaper,this.StickerPaperWeight,this.StickerPagePrice).toFixed(2);
           }else{
             return js_CountPrice.ColorSurfacePromise(this.stickerLong,this.stickerWide,this.StickerPaper,this.StickerPaperWeight).then(value=>{
               this.boxPrice.sticker=value.toFixed(2);
@@ -497,7 +497,7 @@ export default {
       for (var i in this.boxPrice){//合计价格计算
         this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
       }
-      this.boxPrice.count=(this.boxPrice.count*1.2).toFixed(2);
+      this.boxPrice.count=(this.boxPrice.count*1.3).toFixed(2);
       this.dialogPriceVisible=true;
       this.loading=false;
       })

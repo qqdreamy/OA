@@ -47,6 +47,7 @@ export default {
         {label:"250g",value:"250"},
         {label:"300g",value:"300"},
         {label:"350g",value:"350"},
+        {label:"400g",value:"400"},
       ]
     }
   },

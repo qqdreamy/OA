@@ -13,7 +13,7 @@
         </el-input>
       </el-col>
       <el-col :span="4" :offset="1">
-        <el-input placeholder="" v-model="height" @input.native="HeightCount">
+        <el-input placeholder="" v-model="height" >
           <template slot="prepend">高：</template>
         </el-input>
       </el-col>
@@ -327,7 +327,7 @@ export default {
     //选择盖-卷边到底计算事件
     isCurlingBottom:function(){
       if(this.isCurlingBottomSwitch){
-        this.curling=Number(this.height+Number(this.thick));
+        this.curling=Number(this.height)+Number(this.thick);
       }else{
         this.curling=20;
       }

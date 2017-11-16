@@ -126,6 +126,8 @@ export default {
 				this.$router.push('/PaperTransform');
 			}else if(targetName.label=='纸箱计算'){
 				this.$router.push('/Carton');
+			}else if(targetName.label=='彩盒'){
+				this.$router.push('/Corrugate/HandleBox');
 			}
 		},
 		addTab(targetName) {

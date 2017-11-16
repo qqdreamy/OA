@@ -41,6 +41,7 @@
             <el-option label="200g" value="200"></el-option>
             <el-option label="250g" value="250"></el-option>
             <el-option label="300g" value="300"></el-option>
+            <el-option label="350g" value="350"></el-option>
           </el-select>
         </template>
         <template v-if="paper=='自设纸'">
@@ -192,7 +193,7 @@ export default {
         for (var i in this.boxPrice){
           this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
         }
-        this.boxPrice.count=(this.boxPrice.count).toFixed(2);
+        this.boxPrice.count=(this.boxPrice.count*1.3).toFixed(2);
         this.dialogPriceVisible=true;
         this.loading=false;
       })

@@ -25,6 +25,16 @@
         </el-tooltip>
       </el-col>
     </el-form-item>
+    <el-form-item>
+      <el-col :span="2">
+        <el-checkbox class="checkbox" v-model="isExpand">展开尺寸</el-checkbox>
+      </el-col>
+      <el-col :span="2">
+        <template v-if="isExpand">
+          {{BagLong}}*{{BagWide}}
+        </template>
+      </el-col>
+      </el-form-item>
     <el-form-item label="数量">
       <el-col :span="4">
         <el-select placeholder="请订单数量" v-model="quantity">
@@ -135,9 +145,9 @@ import dialogPrice from '../components/dialogPrice.vue'
 export default {
   data () {
     return {
-      long:220,
-      wide:200,
-      height:60,
+      long:300,
+      wide:180,
+      height:280,
       quantity:'1000',
       paper:'白卡纸',
       paperWeight:'250',
@@ -151,6 +161,7 @@ export default {
       isUV:false,
       uvLong:0,
       uvWide:0,
+      isExpand:false,      
       dialogPriceVisible:false,
       loading:false,
       boxPrice:{
@@ -171,9 +182,8 @@ export default {
   },
   computed:{
     BagLong:function(){
-      const MaxLong=1194-30;//最大单粘尺寸
+      const MaxLong=930;//最大单粘尺寸
       if(this.long*2+this.wide*2+20>MaxLong){
-        console.log(this.bagType);
         this.bagType=2;
         return this.long+(this.wide-1)+20
       }else{
@@ -183,7 +193,7 @@ export default {
     },
     BagWide:function(){
       //折边40、底部：宽度/2+15
-      const MaxWide=889-30;
+      const MaxWide=630;//最大宽度
       return this.height+40+(this.wide/2+15);
     }
   },
@@ -198,7 +208,7 @@ export default {
       this.loading=true;
       let BagLong=this.BagLong;
       let quantity=this.bagType==2?this.quantity*2 : this.quantity;
-      const profit=0.5//50%利润计算常量
+      const profit=1.2//20%利润计算常量
       js_CountPrice.KaHePromise(this.BagLong,this.BagWide,quantity).then(value=>{
           return value
       }).then(kahe=>{
@@ -224,13 +234,21 @@ export default {
       }).then(()=>{//印刷
         if(this.print!='4'){
           return js_CountPrice.PrintPromise(this.BagLong,this.BagWide,quantity,this.print).then(value=>{
-            this.boxPrice.print=value.toFixed(2);
+            if(this.bagType==2){
+              this.boxPrice.print=value.toFixed(2)*2;
+            }else{
+              this.boxPrice.print=value.toFixed(2);
+            }
           })
         }
       }).then(()=>{//覆膜
         if(this.isfilm){
           return js_CountPrice.FilmPromise(this.BagLong,this.BagWide,quantity).then(value=>{
-            this.boxPrice.film=value.toFixed(2);
+            if(this.bagType==2){
+              this.boxPrice.film=(value*2).toFixed(2);
+            }else{
+              this.boxPrice.film=value.toFixed(2);
+            }
           })
         }
       }).then(()=>{//烫金
@@ -259,11 +277,9 @@ export default {
       }).then(()=>{
         //自动计算总价
         for (var i in this.boxPrice){
-          console.log(this.boxPrice[i]);
           this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
         }
-        //console.log(this.boxPrice.count);
-        this.boxPrice.count=(this.boxPrice.count*profit+this.boxPrice.count).toFixed(2);
+        this.boxPrice.count=(this.boxPrice.count*profit).toFixed(2);
         this.dialogPriceVisible=true;
         this.loading=false;
       }).catch(value=>console.log(value))

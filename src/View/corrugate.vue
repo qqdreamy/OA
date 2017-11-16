@@ -22,6 +22,10 @@ export default {
         this.$router.push('/Corrugate/HandleBox');
       }else if(aa=='2'){
         this.$router.push('/Corrugate/DoubleInsertBox');
+      }else if(aa=='3'){
+        this.$router.push('/Corrugate/AircraftBox');
+      }else if(aa=='4'){
+        this.$router.push('/Corrugate/DrawerBox');
       }
     }
   }
