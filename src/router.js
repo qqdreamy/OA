@@ -1,4 +1,4 @@
-import Vue from 'vue'
+import Vue from 'vue' 
 import VueRouter from 'vue-router'
 import SizeCount from './View/SizeCount.vue'
 import PaperTransform from './View/PaperTransform.vue'
@@ -29,7 +29,7 @@ import DrawerBox from './components/Corrugate/Corrugate_DrawerBox.vue'
 
 Vue.use(VueRouter)
 
-// 1. 定义（路由）组件。
+// 1. 定义
 // 可以从其他文件 import 进来
 //const home = { template: '<div>欢迎</div>' }
 // 2. 定义路由
