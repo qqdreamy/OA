@@ -1,16 +1,9 @@
 <template>
-<div class="hero-head">
-  <nav class="nav has-shadow">
-    <div class="nav-left">
-      <a class="nav-item is-brand" href="#">
-        <img src="../assets/logo123.png" alt="Bulma logo">
-      </a>
-    </div>
-    <div class="nav-center">
-    <a class="nav-item is-brand" href="#/">
-      报价系统
-    </a>
-    </div>
+  <el-row>
+    <el-col :span="4">
+      <img src="../assets/logo123.png" class="header-logo">
+    </el-col>
+    <el-col :span="3" :offset="17">
     <div class="nav-right nav-menu">
      <span class="nav-item">
       <el-dropdown @command="js" >
@@ -25,22 +18,8 @@
       <el-button type="primary" @click="Setting" icon="setting" style="margin-left:5px"></el-button>
       </span>
     </div>
-  </nav>
-  <el-dialog title="输入管理员密码" v-model="dialogFormVisible">
-  <el-form :model="form">
-    <el-form-item label="管理员邮箱" :label-width="formLabelWidth">
-      <el-input v-model="form.email" auto-complete="off"></el-input>
-    </el-form-item>
-    <el-form-item  label="密码" :label-width="formLabelWidth">
-      <el-input type="password" v-model="form.password" auto-complete="off"></el-input>
-    </el-form-item>
-  </el-form>
-  <div slot="footer" class="dialog-footer">
-    <el-button @click="dialogFormVisible = false">取 消</el-button>
-    <el-button type="primary" @click="Login" v-loading.fullscreen.lock="fullscreenLoading">确 定</el-button>
-  </div>
-</el-dialog>
-</div>
+    </el-col>
+  </el-row>
 </template>
 
 <script>
@@ -100,11 +79,9 @@ export default {
 
 </script>
 
-
-<style lang="scss" scoped>
-$family-primary: Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,SimSun,sans-serif; 
-$body-background: #fff;
-@import "~bulma/sass/utilities/_all";
-@import "~bulma/sass/base/generic";
-@import "~bulma/sass/components/nav";
+<style>
+.header-logo {
+    display: inline-block;
+    vertical-align: middle;
+}
 </style>

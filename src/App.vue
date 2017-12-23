@@ -1,8 +1,11 @@
 <template>
   <div id="app">
-	<myHeader></myHeader>
-	<el-row>
-		<el-col :span="4">
+	<el-container>
+  <el-header style="padding-top:7px">
+		<myHeader></myHeader>
+	</el-header>
+  <el-container>
+    <el-aside width="200px">
 			<el-menu  :default-openeds="['a','b','c']" @select="Paper">
 				<el-submenu index="a">
 					<template slot="title">报价</template>
@@ -25,9 +28,9 @@
 					<el-menu-item index="3-3" >纸箱计算</el-menu-item>
 				</el-submenu>
 			</el-menu>
-		</el-col>
-		<el-col :span="16">
-		<el-tabs v-model="editableTabsValue2" type="card" @tab-click="tabClick"  @tab-remove="removeTab">
+		</el-aside>
+    <el-main>
+			<el-tabs v-model="editableTabsValue2" type="card" @tab-click="tabClick"  @tab-remove="removeTab">
 			<el-tab-pane
 				v-for="(item, index) in editableTabs2"
 				:key="item.name"
@@ -36,14 +39,14 @@
 			</el-tab-pane>
 		</el-tabs>
 		<router-view></router-view>
-		</el-col>
-	</el-row>
+		</el-main>
+  </el-container>
+</el-container>
   </div>
 </template>
 
 <script>
 import myHeader from './components/myHeader.vue'
-import Home from './View/home.vue'
 export default {
   data () {
     return {
@@ -96,8 +99,7 @@ export default {
     }
   },
 	components: {
-		myHeader,
-		Home
+		myHeader
   },
 	created:function(){
 		this.$router.push('/');
@@ -204,5 +206,8 @@ export default {
 <style>
 body {
 	font-family: Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,SimSun,sans-serif;
+}
+.el-header{
+	background-color: rgb(64, 158, 255);
 }
 </style>
