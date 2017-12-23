@@ -3,10 +3,23 @@
   <el-form label-width="80px">
     <el-form-item label="材料">
       <el-col :span="4">
-        <el-select placeholder="请选择材料" v-model.number="material">
+        <el-select placeholder="请选择材料" v-model="material">
           <el-option label="1.5mm纸板" value="1"></el-option>
           <el-option label="瓦楞" value="2"></el-option>
+          <el-option label="珍珠棉" value="3"></el-option>
+          <el-option label="PE" value="4"></el-option>
+          <el-option label="白卡纸" value="白卡纸"></el-option>
+          <el-option label="牛皮纸" value="牛皮纸"></el-option>
         </el-select>
+      </el-col>
+      <el-col :span="4" :offset="1">
+        <template v-if="material=='白卡纸' || material=='牛皮纸'">
+          <el-select placeholder="请选择克重" v-model="paperWeight">
+            <el-option label="200g" value="200"></el-option>
+            <el-option label="250g" value="250"></el-option>
+            <el-option label="300g" value="300"></el-option>
+          </el-select>
+        </template>
       </el-col>
     </el-form-item>
     <el-form-item label="纸板">
@@ -29,7 +42,7 @@
     <el-form-item label="数量">
       <el-col :span="4">
         <el-select placeholder="请订单数量" v-model="quantity">
-          <el-option v-for="item in this.quantitys" :label="item.value" :value="item.value">
+          <el-option v-for="item in this.quantitys" :key="item.value" :label="item.value" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
@@ -63,24 +76,24 @@
       </el-col>
     </el-form-item>
   </el-form>
-  <el-dialog title="报价" @close="closePrice" v-model="dialogPriceVisible" :close-on-click-modal="false" :close-on-press-escape="false">
-    纸板：{{this.boxPrice.Cardboard}}
-    绸布：{{this.boxPrice.drapery}}</br>
-    加工费：{{this.boxPrice.process}}</br>
-    合计：{{this.boxPrice.count}}
-  </el-dialog>
+  <dialogPrice v-on:closePrice="closePrice" :dialogPriceVisible="dialogPriceVisible">
+     <p slot="list"> 
+      基材：{{this.boxPrice.Cardboard}}
+      绸布：{{this.boxPrice.drapery}}</br>
+      卡合：{{this.boxPrice.kahe}}</br>
+      加工费：{{this.boxPrice.process}}</br>
+     </p>
+    <P slot="count">合计：{{this.boxPrice.count}}</P>
+  </dialogPrice>
 </div>
 </template>
 
 <script>
 import SizeCount from '../lib/SizeCount.js'
 import selectData from '../data/selectData.vue'
-var mythick={
-  '2':1150,
-  '1.5':850,
-  '2.5':1450,
-  '3':1750
-}
+import js_CountPrice from '../lib/CountPrice.js'
+import dialogPrice from '../components/dialogPrice.vue'
+
 export default {
   data () {
     return {
@@ -98,20 +111,20 @@ export default {
       bump:0,
       draperyLong:300,
       draperyWide:300,
-      pagePrice:0,
+      paperWeight:'200',
       dialogPriceVisible:false,
       boxPrice:{
         count:0,
         Cardboard:0,
         drapery:0,
+        kahe:0,
         process:0,
-
       }
     }
   },
   mixins: [selectData],
   components: {
-    
+    dialogPrice
   },
   computed:{
     CardboardLong:function(){
@@ -123,53 +136,66 @@ export default {
   },
   methods:{
     closePrice:function(){//清空价格数据
-      for (var i in this.boxPrice){
-        this.boxPrice[i]=0;
-      }
-    },
+    this.dialogPriceVisible=false;
+    for (var i in this.boxPrice){
+      this.boxPrice[i]=0;
+    }
+  },
     CountPrice:function(){
-      var data = require("../json/CardboardPrice.json");
-      var jdata=require("../json/CopperplatePaper.json");
       var TopCardboardPrice;
-      const mthick=850;//设置纸板内托默认纸板厚度
-      const corrugationPrice=2;//设置瓦楞默认价格
-      if(this.material==1){
-        //1.1纸板
-        var Zhullbig=SizeCount.KbCountBig(1,this.CardboardLong,this.CardboardWide).count;
-        var Zhullsmall=SizeCount.KbCountBig(0,this.CardboardLong,this.CardboardWide).count;
-        //获取纸板单张价格
-        var tonPrice=data['双灰板']['吨价'];
-        var zPrice=(tonPrice/2327*mthick/500).toFixed(2)//计算单张价格
-        var dPrice=(tonPrice/1884*mthick/500).toFixed(2)
-        if(dPrice/Zhullbig>zPrice/Zhullsmall){
-          TopCardboardPrice=zPrice/Zhullsmall
-        }else{
-          TopCardboardPrice=dPrice/Zhullbig
+      const CorrugatedName='三层瓦楞';//设置瓦楞
+      const cardboard='双灰板';//默认使用双灰板
+      const thick=1.5;//默认使用1.5mm
+      js_CountPrice.KaHePromise(this.CardboardLong,this.CardboardWide,this.quantity).then(value=>{
+        this.boxPrice.kahe=value.toFixed(2);
+
+      }).then(()=>{
+        if(this.material=='1'){
+          return js_CountPrice.CardboardPromise(this.CardboardLong,this.CardboardWide,cardboard,thick,true).then(value=>{
+            this.boxPrice.Cardboard=value.toFixed(2);
+          })
+        }else if(this.material=='2'){
+          return js_CountPrice.CorrugatedPromise(this.CardboardLong,this.CardboardWide,CorrugatedName).then(value=>{
+            this.boxPrice.Cardboard=value.toFixed(2);
+          })
+        }else if(this.material=='3'){
+          return js_CountPrice.EPE(this.long,this.wide,this.height,'珍珠棉').then(value=>{
+            this.boxPrice.Cardboard=value.toFixed(2);
+          })
         }
-        this.boxPrice.Cardboard=TopCardboardPrice.toFixed(2);
-      }else{
-        this.boxPrice.Cardboard=this.CardboardLong/1000*this.CardboardWide/1000*corrugationPrice;
-      }
-      //1.2绸布
-      if(this.isdrapery){
-        const draperyPrice=this.draperyType==1 ? jdata['绸布']['高档绸布'] : jdata['绸布']['普通绸布'];
-        console.log('米数'+SizeCount.drapery(this.draperyLong,this.draperyWide,this.quantity));
-        this.boxPrice.drapery=(SizeCount.drapery(this.draperyLong,this.draperyWide,this.quantity)*draperyPrice/this.quantity).toFixed(2);
-      }
-      //计算其他价格
-      var boxJson=require("../json/process.json");
-      const boxName='内托1';
-      //加工费
-      this.boxPrice.process=this.quantity < 2000 ? boxJson[boxName]['起步价']/this.quantity : boxJson[boxName][this.quantity];
-      //this.boxPrice.process=boxJson[boxName]
-      //计算合计价格
-      for (var i in this.boxPrice){
-        this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
-      }
-      this.boxPrice.count=this.boxPrice.count.toFixed(2);
-      //纸箱算法
-      console.log(SizeCount.carton());
-      this.dialogPriceVisible=true;
+        else if(this.material=='4'){
+          return js_CountPrice.EPE(this.long,this.wide,this.height,'PE').then(value=>{
+            this.boxPrice.Cardboard=value.toFixed(2);
+          })
+        }
+        else if(this.material=='白卡纸' || this.material=='牛皮纸'){
+          return js_CountPrice.ColorSurfacePromise(this.CardboardLong,this.CardboardWide,this.material,this.paperWeight).then(value=>{
+            this.boxPrice.Cardboard=value.toFixed(2);
+          })
+        }
+      }).then(()=>{
+        //绸布
+        if(this.isdrapery){
+          const draperyType=this.draperyType==1 ? '高档绸布' : '普通绸布';
+          //console.log(this.draperyLong,this.draperyWide,Number(this.quantity),draperyType);
+          return js_CountPrice.DraperyPromise(this.draperyLong,this.draperyWide,Number(this.quantity),draperyType).then(value=>{
+            this.boxPrice.drapery=value.toFixed(2);
+          }).then(()=>{
+            return js_CountPrice.ProcessPromise('内托',this.quantity).then(value=>{
+              this.boxPrice.process=value.toFixed(2);
+            });
+          })
+        }
+      }).then(()=>{
+        //计算合计价格
+        for (var i in this.boxPrice){
+          this.boxPrice.count+= i=="count" ?  0 : Number(this.boxPrice[i]);
+          //console.log('test'+this.boxPrice.count);
+        }
+        this.boxPrice.count=this.boxPrice.count.toFixed(2);
+        //console.log(SizeCount.carton());
+        this.dialogPriceVisible=true;
+      })
     }
   }
 }

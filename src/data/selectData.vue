@@ -26,8 +26,6 @@ export default {
         label:"3.0mm"
       }],
       quantitys:[{
-        value:"100"
-      },{
         value:"500"
       },{
         value:"1000"
@@ -49,6 +47,7 @@ export default {
         {label:"250g",value:"250"},
         {label:"300g",value:"300"},
         {label:"350g",value:"350"},
+        {label:"400g",value:"400"},
       ]
     }
   },

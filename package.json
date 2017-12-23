@@ -1,6 +1,6 @@
 {
   "name": "oa",
-  "version": "1.0.0",
+  "version": "0.0.4",
   "description": "A Vue.js project",
   "author": "qqdreamy <liubowen@qq.com>",
   "private": true,
@@ -10,10 +10,10 @@
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
-    "element-ui": "^1.0.3",
-    "vue": "^2.0.0",
-    "vue-loader": "^9.5.0",
-    "wilddog": "^2.3.5"
+    "babel-runtime": "^6.26.0",
+    "element-ui": "^2.0.8",
+    "leancloud-storage": "^3.4.2",
+    "vue": "^2.5.13"
   },
   "devDependencies": {
     "autoprefixer": "^6.4.0",
@@ -26,6 +26,7 @@
     "babel-register": "^6.0.0",
     "connect-history-api-fallback": "^1.1.0",
     "css-loader": "^0.25.0",
+    "element-ui": "^2.0.8",
     "eslint": "^3.7.1",
     "eslint-friendly-formatter": "^2.0.5",
     "eslint-loader": "^1.5.0",
@@ -42,8 +43,11 @@
     "ora": "^0.3.0",
     "shelljs": "^0.7.4",
     "url-loader": "^0.5.7",
-    "vue-loader": "^9.9.5",
-    "vue-style-loader": "^1.0.0",
+    "vue": "^2.5.13",
+    "vue-router": "^3.0.1",
+    "vue-style-loader": "^3.0.3",
+    "vue-template-compiler": "^2.5.13",
+    "vueify": "^9.4.1",
     "webpack": "^1.13.2",
     "webpack-dev-middleware": "^1.8.3",
     "webpack-hot-middleware": "^2.12.2",

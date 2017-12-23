@@ -32,7 +32,7 @@
     <el-form-item label="数量">
       <el-col :span="4">
         <el-select placeholder="请订单数量" v-model="quantity">
-          <el-option v-for="item in this.quantitys" :label="item.value" :value="item.value">
+          <el-option v-for="item in this.quantitys" :key="item.value" :label="item.value" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
@@ -55,7 +55,7 @@
       <el-col :span="3" :offset="1">
         <template v-if="paper!='自设纸'">
           <el-select placeholder="请选择克重" v-model="paperWeight">
-            <el-option v-for="item in this.paperWeights" :label="item.label" :value="item.value">
+            <el-option v-for="item in this.paperWeights" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </template>
@@ -96,7 +96,7 @@
       <el-col :span="3" :offset="1">
         <template v-if="insidePaper!='自设纸'">
           <el-select placeholder="请选择克重" v-model="insidePaperWeight">
-            <el-option v-for="item in this.paperWeights" :label="item.label" :value="item.value">
+            <el-option v-for="item in this.paperWeights" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </template>
@@ -128,13 +128,13 @@
       <template v-if="isCardboard=='含纸板'">
       <el-col :span="3">
         <el-select placeholder="请选择纸板" v-model="cardboard">
-          <el-option v-for="item in this.cardboards" :label="item.label" :value="item.value">
+          <el-option v-for="item in this.cardboards" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
       <el-col :span="3" :offset="1">
         <el-select placeholder="请选择厚度" v-model="thick">
-          <el-option v-for="item in this.thicks" :label="item.label" :value="item.value">
+          <el-option v-for="item in this.thicks" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
@@ -283,7 +283,7 @@ export default {
       }).then(()=>{
         if(this.isPaper=='含包纸'){//外裱包纸
           if(this.paper=='自设纸'){
-            this.boxPrice.Page=js_CountPrice.ColorSurface(this.hullcolorsurfaceLong,this.hullcolorsurfaceWide,this.paper,this.paperWeight,this.pagePrice).toFixed(2);
+            this.boxPrice.Page=js_CountPrice.ColorSurfacePromise(this.hullcolorsurfaceLong,this.hullcolorsurfaceWide,this.paper,this.paperWeight,this.pagePrice).toFixed(2);
           }else {
             return js_CountPrice.ColorSurfacePromise(this.hullcolorsurfaceLong,this.hullcolorsurfaceWide,this.paper,this.paperWeight).then(value=>{
               this.boxPrice.Page=value.toFixed(2);
@@ -293,7 +293,7 @@ export default {
       }).then(()=>{ 
         if(this.isInsidePaper){//内贴包纸
           if(this.insidePaper=='自设纸'){
-            this.boxPrice.insidePaper=js_CountPrice.ColorSurface(this.InsidePaperLong,this.InsidePaperWide,this.insidePaper,this.insidePaperWeight,this.insidePagePrice).toFixed(2);
+            this.boxPrice.insidePaper=js_CountPrice.ColorSurfacePromise(this.InsidePaperLong,this.InsidePaperWide,this.insidePaper,this.insidePaperWeight,this.insidePagePrice).toFixed(2);
           }else{
             return this.boxPrice.insidePaper=js_CountPrice.ColorSurfacePromise(this.InsidePaperLong,this.InsidePaperWide,this.insidePaper,this.insidePaperWeight).then(value=>{
               this.boxPrice.insidePaper=value.toFixed(2);
@@ -320,7 +320,7 @@ export default {
           }
         }).then(()=>{
           if(this.insideFilm){//内贴覆膜
-            return js_CountPrice.film(this.InsidePaperLong,this.InsidePaperWide,this.quantity).then(value=>{
+            return js_CountPrice.FilmPromise(this.InsidePaperLong,this.InsidePaperWide,this.quantity).then(value=>{
               this.boxPrice.insideFilm=value.toFixed(2);
             });
           }

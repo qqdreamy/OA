@@ -21,7 +21,7 @@
     <el-form-item label="数量">
       <el-col :span="4">
         <el-select placeholder="请订单数量" v-model="quantity">
-          <el-option v-for="item in this.quantitys" :label="item.value" :value="item.value">
+          <el-option v-for="item in this.quantitys" :key="item.value" :label="item.value" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
@@ -38,9 +38,16 @@
           <el-option label="半断" value="2"></el-option>
         </el-select>
       </el-col>
-      <el-col :span="4" :offset="1">
-        <el-input placeholder="" v-model="curling">
-          <template slot="prepend">卷边：</template>
+      <el-col :span="5" :offset="1">
+        <el-input placeholder="" v-model.number="curling">
+          <template slot="prepend">盖-卷边：</template>
+          <el-switch @change="isCurlingBottom" slot="append"  v-model="isCurlingBottomSwitch"></el-switch>
+        </el-input>
+      </el-col>
+      <el-col :span="5" :offset="1">
+        <el-input placeholder="" v-model.number="bottomCurling">
+          <template slot="prepend">底-卷边：</template>
+          <el-switch @change="isBottomCurlingBottom" slot="append"  v-model="isBottomCurlingBottomSwitch"></el-switch>
         </el-input>
       </el-col>
     </el-form-item>
@@ -137,13 +144,13 @@
       <template v-if="isCardboard=='含纸板'">
       <el-col :span="3">
         <el-select placeholder="请选择纸板" v-model="cardboard">
-          <el-option v-for="item in this.cardboards" :label="item.label" :value="item.value">
+          <el-option v-for="item in this.cardboards" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
       <el-col :span="3" :offset="1">
         <el-select placeholder="请选择厚度" v-model="thick">
-          <el-option v-for="item in this.thicks" :label="item.label" :value="item.value">
+          <el-option v-for="item in this.thicks" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
@@ -153,13 +160,13 @@
       <template v-if="isBottomCardboard">
       <el-col :span="3">
         <el-select placeholder="请选择纸板" v-model="bottomCardboard">
-          <el-option v-for="item in this.cardboards" :label="item.label" :value="item.value">
+          <el-option v-for="item in this.cardboards" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
       <el-col :span="3" :offset="1">
         <el-select placeholder="请选择厚度" v-model="bottomThick">
-          <el-option v-for="item in this.thicks" :label="item.label" :value="item.value">
+          <el-option v-for="item in this.thicks" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-col>
@@ -191,7 +198,8 @@
       </el-col>
     </el-form-item>
   </el-form>
-  <el-dialog title="报价" @close="closePrice" v-model="dialogPriceVisible" :close-on-click-modal="false" :close-on-press-escape="false">
+  <dialogPrice v-on:closePrice="closePrice" :dialogPriceVisible="dialogPriceVisible">
+    <p slot="list">
     盖包纸：{{this.boxPrice.topPage}}
     盖-覆膜：{{this.boxPrice.film}}</br>
     底包纸：{{this.boxPrice.bottomPage}}
@@ -205,8 +213,9 @@
     V槽：{{this.boxPrice.Vcut}}</br>
     纸箱：{{this.boxPrice.carton}}
     加工费：{{this.boxPrice.process}}</br>
-    合计：{{this.boxPrice.count}}
-  </el-dialog>
+    </p>
+    <P slot="count">合计：{{this.boxPrice.count}}</P>
+  </dialogPrice>
 </div>
 </template>
 <script>
@@ -214,6 +223,7 @@ import TopBoxMenu from '../components/TopBoxMenu.vue'
 import js_CountPrice from '../lib/CountPrice.js'
 import SizeCount from '../lib/SizeCount.js'
 import selectData from '../data/selectData.vue'
+import dialogPrice from '../components/dialogPrice.vue'
 export default {
   data () {
     return {
@@ -230,7 +240,10 @@ export default {
       cardboard:'双灰板',
       bottomCardboard:'裱白板',
       bottomThick:'2',
-      curling:15,
+      curling:20,
+      bottomCurling:20,
+      isCurlingBottomSwitch:false,
+      isBottomCurlingBottomSwitch:false,
       thick:'2',
       print:'1',
       technique:'1',
@@ -270,7 +283,7 @@ export default {
   },
   mixins: [selectData],
   components: {
-
+    dialogPrice
   },
   computed:{
     changeNumber:function(){//开料尺寸增加+3或10
@@ -304,23 +317,41 @@ export default {
       return Number(this.wide)+Number(this.topHeight*2)+Number(this.thick*2+this.curling*2+1);
     },
     bottomColorSurfaceLong:function(){
-      return Number(this.long-this.bThick*2-this.bottomBack)+Number(this.height*2-this.thick*2)+Number(this.curling*2+this.bThick*2+1);
+      return Number(this.long-this.bThick*2-this.bottomBack)+Number(this.height*2-this.thick*2)+Number(this.bottomCurling*2+this.bThick*2+1);
     },
     bottomColorSurfaceWide:function(){
-      return Number(this.wide-this.bThick*2-this.bottomBack)+Number(this.height*2-this.thick*2+this.curling*2)+Number(this.bThick*2+1);
+      return Number(this.wide-this.bThick*2-this.bottomBack)+Number(this.height*2-this.thick*2+this.bottomCurling*2)+Number(this.bThick*2+1);
     }
   },
   methods:{
     closePrice:function(){//清空数据
+      this.dialogPriceVisible=false;
       for (var i in this.boxPrice){
         this.boxPrice[i]=0;
+      }
+    },
+    //选择盖-卷边到底计算事件
+    isCurlingBottom:function(){
+      if(this.isCurlingBottomSwitch){
+        this.curling=Number(this.topHeight+Number(this.thick));
+      }else{
+        this.curling=20;
+      }
+    },
+    //底-卷边到底计算事件
+    isBottomCurlingBottom:function(){
+      if(this.isBottomCurlingBottomSwitch){
+        this.bottomCurling=this.height;
+      }else{
+        this.bottomCurling=20;
       }
     },
     CountPrice:function(){
       this.loading=true;
       var CountPrice=0;
       let cuttQuantity=0;
-      js_CountPrice.ProcessPromise('天地盖2',this.quantity).then(value=>{
+      let boxName=this.long<250 ? '天地盖1(小)' : this.long>350 ? '天地盖1(大)' : '天地盖1(中)';
+      js_CountPrice.ProcessPromise(boxName,this.quantity).then(value=>{
         this.boxPrice.process=value.toFixed(2);
       }).then(()=>{
         if(this.isCardboard=='含纸板'){//判断是否含纸板
@@ -344,7 +375,13 @@ export default {
           }else{
             return js_CountPrice.ColorSurfacePromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.paper,this.paperWeight).then(value=>{
               this.boxPrice.topPage=value.toFixed(2);
-            })
+            }).then(()=>{
+              if(this.film){
+                return js_CountPrice.FilmPromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity).then(value=>{
+                  this.boxPrice.film=value.toFixed(2);
+                })
+              }
+            });
           }
         }
       }).then(()=>{//底包纸
@@ -354,6 +391,12 @@ export default {
           }else{
             return js_CountPrice.ColorSurfacePromise(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.bottomPaper,this.bottomPaperWeight).then(value=>{
               this.boxPrice.bottomPage=value.toFixed(2);
+            }).then(()=>{
+              if(this.bottomFilm){
+                return js_CountPrice.FilmPromise(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.quantity).then(value=>{
+                  this.boxPrice.bottomFilm=value.toFixed(2);
+                })
+              }
             })
           }
         }
@@ -376,17 +419,9 @@ export default {
           this.boxPrice.made=(value*cuttQuantity).toFixed(2);
         })
       }).then(()=>{
-        if(this.film){
-          return js_CountPrice.FilmPromise(this.topcolorsurfaceLong,this.topcolorsurfaceWide,this.quantity).then(value=>{
-            this.boxPrice.film=value.toFixed(2);
-          })
-        }
+
       }).then(()=>{
-        if(this.bottomFilm){
-          return js_CountPrice.FilmPromise(this.bottomColorSurfaceLong,this.bottomColorSurfaceWide,this.quantity).then(value=>{
-            this.boxPrice.bottomFilm=value.toFixed(2);
-          })
-        }
+
       }).then(()=>{//烫金
         if(this.ispermed){
           return js_CountPrice.PermedPromise(this.permed,this.quantity).then(value=>{

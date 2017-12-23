@@ -93,7 +93,7 @@ export default {
       var k=this.wide;
       let reD=SizeCount.DJSXkb('box',c,c,k,k,'大度');
       let reZ=SizeCount.ZJSXkb('box2',c,c,k,k,'正度');
-      let Price=CountPrice.CheckCardboard(c,k,this.tonprice,this.weight,this.quantity);
+      let Price=CountPrice.CheckCardboard(c,k,this.tonprice,this.weight,this.quantity,true);
       this.D=Price.d.toFixed(2);
       this.Z=Price.z.toFixed(2);
     }

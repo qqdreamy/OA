@@ -1,4 +1,4 @@
-import Vue from 'vue'
+import Vue from 'vue' 
 import VueRouter from 'vue-router'
 import SizeCount from './View/SizeCount.vue'
 import PaperTransform from './View/PaperTransform.vue'
@@ -19,12 +19,18 @@ import Model_Price from './View/Model_Price.vue'
 import Model_Price_1 from './components/Model_Price_1.vue'
 import Carton from './View/Carton.vue'
 import Home from './View/home.vue'
+import update from './View/update.md'
 import Bag from './View/Bag.vue'
 import PriceSet from './view/PriceSet.vue'
+import Corrugate from './view/corrugate.vue'
+import HandleBox from './components/Corrugate/Corrugate_HandleBox.vue'
+import DoubleInsertBox from './components/Corrugate/Corrugate_DoubleInsertBox.vue'
+import AircraftBox from './components/Corrugate/Corrugate_AircraftBox.vue'
+import DrawerBox from './components/Corrugate/Corrugate_DrawerBox.vue'
 
 Vue.use(VueRouter)
 
-// 1. 定义（路由）组件。
+// 
 // 可以从其他文件 import 进来
 //const home = { template: '<div>欢迎</div>' }
 // 2. 定义路由
@@ -63,6 +69,14 @@ const routes = [
   },
   { path: '/Calendar_Price',component:Calendar_Price },
   { path: '/Bag',component:Bag },
+  {path:'/Corrugate',component:Corrugate,
+  children:[
+    {path:'HandleBox',component:HandleBox},
+    {path:'DoubleInsertBox',component:DoubleInsertBox},
+    {path:'AircraftBox',component:AircraftBox},
+    {path:'DrawerBox',component:DrawerBox}
+    ]
+  },
   { path: '/PriceSet',component:PriceSet },
   { path: '/Model_Price',component:Model_Price,
     children:[
