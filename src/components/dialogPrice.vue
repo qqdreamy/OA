@@ -12,20 +12,21 @@
 export default {
   data () {
     return {
-      isShowPrice:false
-      //dialogPriceVisible:false,
+      isShowPrice: false
+      // dialogPriceVisible:false,
     }
   },
   components: {
 
   },
   props: ['dialogPriceVisible'],
-  methods:{
-    closePrice:function(){//清空价格数据
-       //this.$emit('update:dialogPriceVisible', false);
-       this.$emit('closePrice');
-       //this.dialogPriceVisible=false;
-       //console.log('closePrice');
+  methods: {
+    // 清空价格数据
+    closePrice: function () {
+       // this.$emit('update:dialogPriceVisible', false);
+      this.$emit('closePrice')
+       // this.dialogPriceVisible=false;
+       // console.log('closePrice');
     }
   }
 }
